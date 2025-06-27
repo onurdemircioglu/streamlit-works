@@ -11,7 +11,7 @@ with col1:
     
     - [Personal Finance Assistant](https://www.themoviedb.org)    
     
-    - [Wheel of Fortune](https://www.rottentomatoes.com)
+    - [Wheel of Fortune](https://app-works-e4rh8t2hha8jnxepsvhjxa.streamlit.app/)
     """)
 
 with col2:
@@ -22,7 +22,6 @@ with col2:
         - [GitHub](https://github.com/onurdemircioglu)
                 
         - [LinkedIn](https://www.linkedin.com/in/onur-demircio%C4%9Flu-72597266)
-        
         
                 
         """)
