@@ -39,7 +39,7 @@ def draw_wheel(options, angle, color_map_name):
 
 # UI Setup
 st.title("🎡 Animated Wheel of Fortune with Colors")
-options = st.text_area("Enter options (one per line):", "User1\nUser2\nnUser3\nUser4\nUser5\nUser6",height=200).splitlines()
+options = st.text_area("Enter options (one per line):", "User1\nUser2\nUser3\nUser4\nUser5\nUser6",height=200).splitlines()
 options = [opt.strip() for opt in options if opt.strip()]
 
 if len(options) < 2:
