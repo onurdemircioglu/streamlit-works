@@ -1,0 +1,6 @@
+streamlit
+matplotlib
+numpy
+io
+random
+time
