@@ -9,7 +9,7 @@ with col1:
     My Works
     - [Movies TV Shows Tracking](https://app-works-jzt8gzeunzdfjsszheejit.streamlit.app/)
     
-    - [Personal Finance Assistant](https://www.themoviedb.org)    
+    - [Personal Finance Assistant](https://app-works-hxohzys9hwkb4xirekx8kf.streamlit.app/)
     
     - [Wheel of Fortune](https://app-works-e4rh8t2hha8jnxepsvhjxa.streamlit.app/)
     """)
