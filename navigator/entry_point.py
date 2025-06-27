@@ -20,4 +20,9 @@ with col2:
         - [My Blog (Substack)](https://computerdiaries.substack.com/)
         
         - [GitHub](https://github.com/onurdemircioglu)
+                
+        - [LinkedIn](https://www.linkedin.com/in/onur-demircio%C4%9Flu-72597266)
+        
+        
+                
         """)
