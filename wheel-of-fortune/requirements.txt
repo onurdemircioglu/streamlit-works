@@ -1,5 +1,6 @@
 streamlit
 matplotlib
+matplotlib.pyplot
 numpy
 io
 random
