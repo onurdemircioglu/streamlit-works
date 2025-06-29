@@ -8,6 +8,44 @@ def show(navigate_to):
 
     changelog = [
         {
+            "date": "2025-06-29",
+            "changes": {
+                "Added": [
+                    "TBL_REMINDERS table created for tracking dates (bills, payment etc.)",
+                    "REMINDERS page created to insert/delete/update reminders",
+                    "View and Filter Reminders section added on Dashboard Page (with All, Upcoming, Overdue, Done, Active filters and 'Marks as Done', 'Delete' functionalities) "
+                ],
+            }
+        },
+
+        {
+            "date": "2025-06-28",
+            "changes": {
+                "Added": [
+                    "An average line for Montly Expense Trend Chart on Dashboard Page",
+                    "Show Month Average Line toggle button on Montly Expense Trend Chart on Dashboard Page (This is also dynamic based on the selection of number of months)",
+                    "A percentage difference column from average (with in the Montly Expense Trend Table on Dashboard Page (🔴 Red if above average (overspending), 🟢 Green if below average (under control))",
+                    "Top x months with the highest total expenses are shown in red bar with user input (capped with number of month selection)",
+                    "st.slider added for the how many months are shown on the chart",
+                    "Month to month (MoM) change added on Montly Expense Trend Table on Dashboard Page",
+                    "Year on year (YoY) change added on Montly Expense Trend Table on Dashboard Page",
+                    "Year to date (YtD) change added on Montly Expense Trend Table on Dashboard Page",
+                    "12 Months Moving Average line added on Montly Expense Trend Chart on Dashboard Page",
+                    "12 Months Moving Average amount added on Montly Expense Trend Table on Dashboard Page",
+                    "REPORTABLE_EXPENSES view created on database to ease the data retrieving process",
+                    "'Select a Month for Detailed Breakdown' added below the Trend chart on Dashboard Page. This shows selected month's total expsenses by expense group with percentage and mini pie chart",
+                    "Future installments summary on Dashboard Page (If there is none it writes 'There is no future dated expense.')"
+                ],
+                "Changed": [
+                    "Montly Expense Trend Chart on Dashboard Page is converted into bar chart format",
+                    "Montly Expense Trend Chart on Dashboard Page recreated with Altair (st.altair_chart)",
+                    "'Monthly Expenses (Last x Months) chart title now uses selection of number of months as input",
+                    "Columns are renamed on Montly Expense Trend Table on Dashboard Page"
+                ]
+            }
+        },
+
+        {
             "date": "2025-06-21",
             "changes": {
                 "Added": [
@@ -16,8 +54,8 @@ def show(navigate_to):
                     "Constraint check: if installment status is Yes then no of installment must be filled.",
                     "Confirmation checkbox before clearing the form (preventing accidental wipes)",
                     "Latest Entries Page created which shows the last 30 records (based on ID, not the Expense Date)",
-                    "Basic Montly Expense Trend Chart on Dashboard Page",
-                    "Basic Montly Expense Trend Table on Dashboard Page"
+                    "Montly Expense Trend Chart on Dashboard Page",
+                    "Montly Expense Trend Table on Dashboard Page"
                 ],
                 "Changed": [
                     "Expense Entry page and the code modified based on recently created lookup tables",

@@ -126,16 +126,6 @@ def show(navigate_to):
             else:
                 st.error("Something went wrong while saving.")
 
-
-    """if st.button("Clear All Fields"):
-        for key in [
-            "key_expense_date", "key_expense_type", "key_expense_group", "key_expense_subgroup", "key_expense_place",
-            "key_expense_detail", "key_expense_amount", "key_installment_status", "key_installment_count", "key_no_of_installment",
-            "key_bank_detail", "key_expense_note"
-        ]:
-            st.session_state.pop(key, None)  # clears if key exists
-            st.success("Form cleared.")
-        st.rerun()"""
     
 
     form_keys = [
