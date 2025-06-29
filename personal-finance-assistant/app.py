@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.set_page_config(page_title="Budget Management & Expense Tracker", page_icon="🎥", layout="wide", initial_sidebar_state="collapsed") 
+st.set_page_config(page_title="Personal Finance Assistant", page_icon="🎥", layout="wide", initial_sidebar_state="collapsed") 
 
 # Fully Hide Sidebar
 st.markdown(
@@ -17,7 +17,7 @@ st.markdown(
 )
 
 
-from pages import page_dashboard, page_entry, page_changelog, page_reports, page_manage_groups, page_types, page_banks, page_latest_entries, page_test
+from pages import page_dashboard, page_entry, page_changelog, page_reports, page_reminders, page_manage_groups, page_types, page_banks, page_latest_entries, page_test
 from utils import data  # Import the data loading function
 from utils.utils import initialize_session_state
 
@@ -56,6 +56,8 @@ if st.session_state.current_page == "page_dashboard":
     page_dashboard.show(navigate_to)
 elif st.session_state.current_page == "page_reports":
     page_reports.show(navigate_to)
+elif st.session_state.current_page == "page_reminders":
+    page_reminders.show(navigate_to)
 elif st.session_state.current_page == "page_entry":
     page_entry.show(navigate_to)
 elif st.session_state.current_page == "page_changelog":
