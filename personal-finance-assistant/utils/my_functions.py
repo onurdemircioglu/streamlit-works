@@ -1,6 +1,5 @@
 import sqlite3
 import pandas as pd
-#import re
 from datetime import datetime
 import streamlit as st
 import os
@@ -23,34 +22,14 @@ class MyClass:  # ✅ Make sure this class is at the top level
     @staticmethod # Due to @staticmethod addition there is no need for 'self' declaration
     def get_db_connection():
         try:
-            conn = sqlite3.connect(DB_PATH)
+            #conn = sqlite3.connect(DB_PATH)
+            conn = sqlite3.connect(DB_PATH, check_same_thread=False, isolation_level=None)  # Enables autocommit (Streamlit reruns the script top-to-bottom on every interaction, which can result in multiple conflicting or incomplete SQLite transactions when MyClass is shared across widgets/pages)
+
             conn.row_factory = sqlite3.Row  # Enables dictionary-like row access
             return conn
         except sqlite3.Error as e:
             print(f"Error while connecting to database: {e}")
-            return None
-    
-
-    """def load_initial_data(self):
-        conn = self.get_db_connection()
-        cursor = conn.cursor()
-        
-        all_data_df = pd.read_sql_query("SELECT * FROM MAIN_DATA", conn)
-        all_episodes_df = pd.read_sql("SELECT * FROM EPISODES", conn)
-        tv_shows_last_watched_df = pd.read_sql("SELECT * FROM TV_SHOWS_LAST_WATCHED", conn)
-        
-
-        # Create filtered DataFrames
-        all_movies_df = all_data_df[all_data_df["TYPE"] == "Movie"]
-        all_tv_shows_df = all_data_df[all_data_df["TYPE"] == "TV Series"]
-        movies_watched_df = all_data_df[ (all_data_df["STATUS"] == "WATCHED") & (all_data_df["TYPE"] == "Movie") ]
-        tv_shows_watched_df = all_data_df[ (all_data_df["STATUS"] == "WATCHED") & (all_data_df["TYPE"] == "TV Series") ]
-        tv_shows_active_df = all_data_df[ (all_data_df["STATUS"] == "IN PROGRESS") & (all_data_df["TYPE"] == "TV Series") ]
-        
-        conn.close()
-        
-        return all_data_df, all_movies_df, all_tv_shows_df, movies_watched_df, tv_shows_watched_df, tv_shows_active_df, all_episodes_df, tv_shows_last_watched_df"""
-   
+            return None   
     
     def insert_new_record(self
                           ,expense_date: str,
@@ -119,8 +98,6 @@ class MyClass:  # ✅ Make sure this class is at the top level
 
 
         placeholders = ", ".join(["?"] * len(values))  # Generates ?, ?, ?, ?
-        #print(placeholders)
-        #print(values)
         query = f"INSERT INTO TBL_EXPENSES ({', '.join(columns)}) VALUES ({placeholders})"
 
         # Execute the insert query
@@ -137,7 +114,6 @@ class MyClass:  # ✅ Make sure this class is at the top level
         # Check if the record inserted and exists in the database now.
         cursor.execute("SELECT MAX(ID) FROM TBL_EXPENSES WHERE 1=1")
         new_record_id = cursor.fetchone()[0]
-        #print("new_record_id", new_record_id)
 
         cursor.close()
         conn.close()
@@ -171,7 +147,8 @@ class MyClass:  # ✅ Make sure this class is at the top level
         conn.commit()
         conn.close()
 
-    # **************************************************************** MANAGE GROUPS START **************************************************************** #
+# **************************************************************** MANAGE GROUPS - START **************************************************************** #
+    
     def get_expense_groups(self):
         conn = self.get_db_connection()
         cur = conn.cursor()
@@ -267,11 +244,11 @@ class MyClass:  # ✅ Make sure this class is at the top level
         conn.close()
         return data
     
-    # **************************************************************** MANAGE GROUPS END **************************************************************** #
+# **************************************************************** MANAGE GROUPS - END **************************************************************** #
 
 
 
-    # **************************************************************** MANAGE TYPES START **************************************************************** #
+# **************************************************************** MANAGE TYPES - START **************************************************************** #
 
 
     def get_expense_types(self):
@@ -329,10 +306,10 @@ class MyClass:  # ✅ Make sure this class is at the top level
         conn.close()
 
     
-    # **************************************************************** MANAGE TYPES END **************************************************************** #
+# **************************************************************** MANAGE TYPES - END **************************************************************** #
 
 
-    # **************************************************************** MANAGE BANKS START **************************************************************** #
+# **************************************************************** MANAGE BANKS - START **************************************************************** #
 
 
     """def get_banks(self):
@@ -448,10 +425,9 @@ class MyClass:  # ✅ Make sure this class is at the top level
         return results
 
 
+# **************************************************************** MANAGE BANKS - END **************************************************************** #
 
-
-    # **************************************************************** MANAGE BANKS END **************************************************************** #
-
+# **************************************************************** INSERT EXPENSE - START **************************************************************** #
 
 
     def insert_expense(self, expense_date, expense_type, expense_group, expense_subgroup,
@@ -480,3 +456,96 @@ class MyClass:  # ✅ Make sure this class is at the top level
         except Exception as e:
             print("Insert error:", e)
             return False
+
+# **************************************************************** INSERT EXPENSE - END **************************************************************** #
+
+
+# **************************************************************** REMINDERS - START **************************************************************** #
+
+
+    def insert_reminder(self, date, name, detail, category, recurrence, interval, is_active, is_done, done_date):
+        conn = self.get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute("""
+                INSERT INTO TBL_REMINDERS (
+                    REMINDER_DATE, REMINDER_NAME, REMINDER_DETAIL, REMINDER_CATEGORY,
+                    RECURRENCE_TYPE, RECURRENCE_INTERVAL, IS_ACTIVE, IS_DONE, DONE_DATE
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (date, name, detail, category, recurrence, interval, is_active, is_done, done_date))
+            conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+        finally:
+            conn.close()
+
+
+    def get_all_reminders(self):
+        conn = self.get_db_connection()
+        #conn.row_factory = sqlite3.Row
+        #cur = conn.cursor()
+        #cursor = conn.cursor()
+        #cur.execute("SELECT * FROM TBL_REMINDERS ORDER BY REMINDER_DATE DESC")
+        results = pd.read_sql_query("SELECT * FROM TBL_REMINDERS ORDER BY REMINDER_DATE DESC", conn)
+        #results = cur.fetchall()
+        conn.close()
+        return results
+    
+    
+    def update_reminder(self, reminder_id, date, name, detail, category, recurrence, interval, is_active, is_done, done_date):
+        conn = self.get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute("""
+                UPDATE TBL_REMINDERS SET
+                    REMINDER_DATE = ?, REMINDER_NAME = ?, REMINDER_DETAIL = ?, REMINDER_CATEGORY = ?,
+                    RECURRENCE_TYPE = ?, RECURRENCE_INTERVAL = ?, IS_ACTIVE = ?, IS_DONE = ?, DONE_DATE = ?, UPDATED_AT = DATE('now')
+                WHERE ID = ?
+            """, (date, name, detail, category, recurrence, interval, is_active, is_done, done_date, reminder_id))
+            conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+        finally:
+            conn.close()
+
+
+    # Mark as done
+    def mark_reminder_done(self, reminder_id):
+        try:
+            conn = self.get_db_connection()
+            with conn:
+                cursor = conn.execute("""
+                    UPDATE TBL_REMINDERS 
+                    SET IS_DONE = 1, DONE_DATE = DATE('now'), UPDATED_AT = DATE('now')
+                    WHERE ID = ?
+                """, (int(reminder_id),))
+                print("Rows updated:", cursor.rowcount)
+                conn.commit()
+            return True
+        except Exception as e:
+            return False, str(e)
+
+
+    # Soft delete
+    def soft_delete_reminder(self, reminder_id):
+        try:
+            conn = self.get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE TBL_REMINDERS 
+                SET IS_ACTIVE = 0, UPDATED_AT = DATE('now')
+                WHERE ID = ?
+            """, (int(reminder_id),))
+            conn.commit()
+            conn.close()
+            return True
+        except Exception as e:
+            return False, str(e)
+
+
+
+# **************************************************************** REMINDERS - END **************************************************************** #

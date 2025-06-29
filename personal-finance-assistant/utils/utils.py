@@ -28,23 +28,26 @@ def display_menu_buttons(navigate_to):
     with col3:
         if st.button("Reports"):
             navigate_to("page_reports")
-
+    
     with col4:
+        if st.button("Reminders"):
+            navigate_to("page_reminders")
+
+    with col5:
         if st.button("Latest Entries"):
             navigate_to("page_latest_entries")
 
-    with col5:
+    with col6:
         if st.button("Manage Groups"):
             navigate_to("page_manage_groups")
     
-    with col6:
+    with col7:
         if st.button("Manage Types"):
             navigate_to("page_types")
 
-    with col7:
+    with col8:
         if st.button("Manage Banks"):
             navigate_to("page_banks")
-
 
     with col10:
         if st.button("Change Log"):
