@@ -8,6 +8,28 @@ def show(navigate_to):
 
     changelog = [
         {
+            "date": "2025-07-14",
+            "changes": {
+                "Added": [
+                    "Export page created for data exports",
+                    "Net Present Value calculation added on Calculations Page"
+                ]
+            }
+        },
+        
+        {
+            "date": "2025-07-12",
+            "changes": {
+                "Added": [
+                    "Calculations page created"
+                ],
+                "Changed": [
+                    "REMINDERS page rearranged with adding functionality of editing reminders"
+                ]
+            }
+        },
+
+        {
             "date": "2025-06-29",
             "changes": {
                 "Added": [
