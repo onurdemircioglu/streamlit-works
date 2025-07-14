@@ -17,7 +17,7 @@ st.markdown(
 )
 
 
-from pages import page_dashboard, page_entry, page_changelog, page_reports, page_reminders, page_manage_groups, page_types, page_banks, page_latest_entries, page_test
+from pages import page_dashboard, page_entry, page_changelog, page_reports, page_reminders, page_manage_groups, page_types, page_banks, page_latest_entries, page_calculations, page_export, page_test
 from utils import data  # Import the data loading function
 from utils.utils import initialize_session_state
 
@@ -69,7 +69,11 @@ elif st.session_state.current_page == "page_types":
 elif st.session_state.current_page == "page_banks":
     page_banks.show(navigate_to)
 elif st.session_state.current_page == "page_latest_entries":
-    page_latest_entries.show(navigate_to)    
+    page_latest_entries.show(navigate_to)
+elif st.session_state.current_page == "page_calculations":
+    page_calculations.show(navigate_to)
+elif st.session_state.current_page == "page_export":
+    page_export.show(navigate_to)
 elif st.session_state.current_page == "page_test":
     page_test.show(navigate_to)
 
