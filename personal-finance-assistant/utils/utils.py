@@ -14,7 +14,7 @@ def initialize_session_state():
 
 
 def display_menu_buttons(navigate_to):
-    col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11 = st.columns(11)
+    col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11, col12, col13 = st.columns(13)
 
     # Add navigation buttons in the respective columns
     with col1:
@@ -48,18 +48,20 @@ def display_menu_buttons(navigate_to):
     with col8:
         if st.button("Manage Banks"):
             navigate_to("page_banks")
+    
+    with col9:
+        if st.button("Calculations"):
+            navigate_to("page_calculations")
 
     with col10:
+        if st.button("Exports"):
+            navigate_to("page_export")
+
+    with col11:
         if st.button("Change Log"):
             navigate_to("page_changelog")
 
-
-
-
-
-
-
-    with col11:
+    with col13:
         if st.button("Test Page"):
             navigate_to("page_test")
             

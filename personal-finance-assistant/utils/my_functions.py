@@ -488,7 +488,7 @@ class MyClass:  # ✅ Make sure this class is at the top level
         #cur = conn.cursor()
         #cursor = conn.cursor()
         #cur.execute("SELECT * FROM TBL_REMINDERS ORDER BY REMINDER_DATE DESC")
-        results = pd.read_sql_query("SELECT * FROM TBL_REMINDERS ORDER BY REMINDER_DATE DESC", conn)
+        results = pd.read_sql_query("SELECT * FROM TBL_REMINDERS ORDER BY REMINDER_DATE", conn)
         #results = cur.fetchall()
         conn.close()
         return results
@@ -503,7 +503,7 @@ class MyClass:  # ✅ Make sure this class is at the top level
                     REMINDER_DATE = ?, REMINDER_NAME = ?, REMINDER_DETAIL = ?, REMINDER_CATEGORY = ?,
                     RECURRENCE_TYPE = ?, RECURRENCE_INTERVAL = ?, IS_ACTIVE = ?, IS_DONE = ?, DONE_DATE = ?, UPDATED_AT = DATE('now')
                 WHERE ID = ?
-            """, (date, name, detail, category, recurrence, interval, is_active, is_done, done_date, reminder_id))
+            """, (date, name, detail, category, recurrence, interval, is_active, is_done, done_date, int(reminder_id)))
             conn.commit()
             return True
         except Exception as e:
@@ -549,3 +549,24 @@ class MyClass:  # ✅ Make sure this class is at the top level
 
 
 # **************************************************************** REMINDERS - END **************************************************************** #
+
+
+
+# **************************************************************** EXPORT - START **************************************************************** #
+
+    def list_all_db_objects(self):
+
+        conn = self.get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT name, type
+            FROM sqlite_master
+            WHERE type IN ('table', 'view')
+            AND name NOT LIKE 'sqlite_%'
+            ORDER BY type, name
+        """)
+        results = cursor.fetchall()
+        conn.close()
+        return results
+
+# **************************************************************** EXPORT - END **************************************************************** #
