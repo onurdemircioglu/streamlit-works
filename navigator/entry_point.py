@@ -12,6 +12,8 @@ with col1:
     - [Personal Finance Assistant](https://app-works-hxohzys9hwkb4xirekx8kf.streamlit.app/)
     
     - [Wheel of Fortune](https://app-works-e4rh8t2hha8jnxepsvhjxa.streamlit.app/)
+                
+    - [Word Finder](https://app-works-jh6nvb34tfu4kmgcansjwp.streamlit.app/)
     """)
 
 with col2:
