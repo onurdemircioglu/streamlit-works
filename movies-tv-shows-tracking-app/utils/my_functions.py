@@ -22,7 +22,8 @@ app_dir = os.path.dirname(script_dir)
 # Build path to the DB file inside the app folder
 #DB_PATH = os.path.join(app_dir, "movies_tv_shows.db")
 # 🔁 This line has been changed
-DB_PATH = os.path.join(app_dir, "database", "movies_tv_shows.db")  # This line has been added or changed
+#DB_PATH = os.path.join(app_dir, "database", "movies_tv_shows.db")
+DB_PATH = "movies_tv_shows.db"
 
 
 
@@ -385,4 +386,5 @@ class MyClass:  # ✅ Make sure this class is at the top level
         conn.commit()
 
         cursor.close()
+
         conn.close()
