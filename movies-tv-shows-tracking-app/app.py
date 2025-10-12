@@ -17,7 +17,7 @@ st.markdown(
 )
 
 
-from pages import page_home, page_tv_shows, page_movies, page_metrics, page_latest_entries, page_data_entry, page_update, page_search, page_test
+from pages import page_home, page_tv_shows, page_movies, page_metrics, page_latest_entries, page_data_entry, page_update, page_search, page_bulk_insert, page_changelog, page_test
 from utils import data  # Import the data loading function
 from utils.utils import initialize_session_state
 
@@ -80,5 +80,9 @@ elif st.session_state.current_page == "page_update":
     page_update.show(navigate_to)
 elif st.session_state.current_page == "page_search":
     page_search.show(navigate_to)
+elif st.session_state.current_page == "page_bulk_insert":
+    page_bulk_insert.show(navigate_to)
+elif st.session_state.current_page == "page_changelog":
+    page_changelog.show(navigate_to)
 elif st.session_state.current_page == "page_test":
     page_test.show(navigate_to)
