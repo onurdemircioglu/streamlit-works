@@ -7,7 +7,7 @@ obj = my_functions.MyClass()
 # Function to load all data
 def load_all_data():
     conn = obj.get_db_connection()
-    #cursor = conn.cursor()
+    cursor = conn.cursor()
     
     all_data_df = pd.read_sql_query("SELECT * FROM MAIN_DATA", conn)
     all_episodes_df = pd.read_sql("SELECT * FROM EPISODES", conn)
@@ -23,4 +23,5 @@ def load_all_data():
     
     conn.close()
     
+
     return all_data_df, all_movies_df, all_tv_shows_df, movies_watched_df, tv_shows_watched_df, tv_shows_active_df, all_episodes_df, tv_shows_last_watched_df
