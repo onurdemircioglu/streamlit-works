@@ -5,16 +5,44 @@ from datetime import datetime
 import streamlit as st
 import os
 
-# Database Path
+"""path_parts = [os.getcwd(), "utils"]
+DB_PATH = os.path.join(*path_parts, "movies_tv_shows.db")"""
+
+#path_parts = [os.getcwd(),]
+#DB_PATH = os.path.join(*path_parts, "movies_tv_shows.db")
+
+
+
+# Get the folder where the current script is (for example: utils/)
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Go one level up to reach the app folder (if script is in utils/)
+app_dir = os.path.dirname(script_dir)
+
+# Build path to the DB file inside the app folder
+#DB_PATH = os.path.join(app_dir, "movies_tv_shows.db")
+# 🔁 This line has been changed
+DB_PATH = os.path.join(app_dir, "database", "movies_tv_shows.db")  # This line has been added or changed
+
+
+
+
+
+# ************************************************************************************************ #
+# ************************************************************************************************ #
+# ************************************************************************************************ #
+# ************************************************************************************************ #
+# Database Path for GitHub (app.py ile aynı klasörde olması gerekiyor)
 # Get the path of the current directory (utils folder)
-current_directory = os.path.dirname(__file__)
+#current_directory = os.path.dirname(__file__)
 # Go one directory up to the root folder
-DB_PATH = os.path.join(current_directory, "..", "movies_tv_shows.db")
+#DB_PATH = os.path.join(current_directory, "..", "movies_tv_shows.db")
+
 
 class MyClass:  # ✅ Make sure this class is at the top level
 
     @staticmethod
-    def check_imdb_title(imdb_url: str) -> str:
+    def check_imdb_title(imdb_url: str) -> int:
         if "/title/tt" in imdb_url:
             return 1
         else:
@@ -77,7 +105,7 @@ class MyClass:  # ✅ Make sure this class is at the top level
 
     def check_existing_record(self, imdb_tt: str):  # ✅ Added 'self'
         conn = self.get_db_connection()
-        cursor = conn.cursor()
+        #cursor = conn.cursor()
         #cursor.execute("SELECT ID FROM MAIN_DATA WHERE IMDB_TT = ?", (imdb_tt,))
         data_exist = pd.read_sql_query("SELECT ID FROM MAIN_DATA WHERE IMDB_TT = ?", conn, params=(imdb_tt,))
 
@@ -88,10 +116,10 @@ class MyClass:  # ✅ Make sure this class is at the top level
         conn.close()
         #return None
         return 0
-   
     
+
     def insert_new_record(self
-                          ,imdb_tt: str, record_type: str, record_title_type: str
+                          ,imdb_tt: str, record_type: str = None, record_title_type: str = None
                           ,original_title: str = None, primary_title: str = None
                           ,record_status: str = None, release_year: int = None
                           ,record_score: int = None, score_date: str = None
@@ -261,7 +289,7 @@ class MyClass:  # ✅ Make sure this class is at the top level
         cursor = conn.cursor()
         
         # Fetch unwatched episodes for the show
-        cursor.execute("SELECT EPISODE_NO FROM EPISODES WHERE 1=1 AND WATCHED_DATE IS NULL AND RELATED_ID = ?", (show_id,))
+        cursor.execute("SELECT EPISODE_NO FROM EPISODES WHERE 1=1 AND (WATCHED_DATE IS NULL OR WATCHED_DATE = '1900-01-01') AND RELATED_ID = ?", (show_id,))
         existing_episodes = {row[0] for row in cursor.fetchall()}  # Convert to a set for fast lookup
 
         new_episodes = []  # Store existing episodes to be updated
@@ -316,3 +344,44 @@ class MyClass:  # ✅ Make sure this class is at the top level
 
         return original_df
     
+    def check_existing_record_other_links(self, related_id: int, link: str): 
+        conn = self.get_db_connection()
+        #cursor = conn.cursor()
+        data_exist = pd.read_sql_query("SELECT ID FROM OTHER_LINKS WHERE RELATED_ID = ? AND LINK = ?", conn, params=(related_id, link,))
+
+        if not data_exist.empty:
+            return 1
+
+        conn.close()
+        return 0
+    
+
+    def insert_other_links(self, related_id: int, type: str, link: str):
+        conn = self.get_db_connection()
+        cursor = conn.cursor()
+
+        
+        columns = ["RELATED_ID"]
+        columns.append("TYPE")
+        columns.append("LINK")
+        
+        values = []
+        values.append(related_id)
+        values.append(type)
+        values.append(link)
+        
+
+
+        placeholders = ", ".join(["?"] * len(values))  # Generates ?, ?, ?, ?
+        #print(placeholders)
+        #print(columns)
+        #print(values)
+        #query = f"INSERT INTO OTHER_LINKS (RELATED_ID, TYPE, LINK) VALUES (?, ?, ?)"
+        query = f"INSERT INTO OTHER_LINKS ({', '.join(columns)}) VALUES ({placeholders})"
+
+        # Execute the insert query
+        cursor.execute(query, values)
+        conn.commit()
+
+        cursor.close()
+        conn.close()

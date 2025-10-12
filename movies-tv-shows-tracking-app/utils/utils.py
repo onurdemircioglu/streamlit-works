@@ -14,7 +14,7 @@ def initialize_session_state():
 
 
 def display_menu_buttons(navigate_to):
-    col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns(9)
+    col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11 = st.columns(11)
 
     # Add navigation buttons in the respective columns
     with col1:
@@ -48,9 +48,16 @@ def display_menu_buttons(navigate_to):
     with col8:
         if st.button("Search"):
             navigate_to("page_search")
-
+    
     with col9:
+        if st.button("Bulk Insert"):
+            navigate_to("page_bulk_insert")
+    
+    with col10:
+        if st.button("Changelog"):
+            navigate_to("page_changelog")
+
+    with col11:
         if st.button("Test Page"):
             navigate_to("page_test")
             
-
