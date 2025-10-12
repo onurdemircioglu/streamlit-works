@@ -1,4 +1,5 @@
 import pandas as pd
+import datetime
 import streamlit as st
 from pandas.api.types import (
     is_categorical_dtype,
@@ -20,12 +21,22 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Filtered dataframe
     """
-    modify = st.checkbox("Add filters", key="add_filters")
+    #modify = st.checkbox("Add filters", key="my_filters")
+    with st.expander("About This Page", expanded=False):
+        st.markdown(
+            """This app accomodates the blog [here](https://blog.streamlit.io/auto-generate-a-dataframe-filtering-ui-in-streamlit-with-filter_dataframe/)
+            and walks you through one example of how the Streamlit
+            Data Science Team builds add-on functions to Streamlit.
+            """
+        )
+    
+    modify = st.checkbox("Add filters")
 
     if not modify:
         return df
 
-    df = df.copy()
+    #df = df.copy()
+    
 
     # Try to convert datetimes into a standard format (datetime, no timezone)
     for col in df.columns:
@@ -82,6 +93,17 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
                         (_min, _max),
                         step=step,
                     )
+                elif column == "WATCH_GRADE":
+                    _min = 1
+                    _max = 10
+                    step = 1
+                    user_num_input = right.slider(
+                        f"Values for {column}",
+                        _min,
+                        _max,
+                        (_min, _max),
+                        step=step,
+                    )
                 elif column == "DURATION":
                     _min = 0
                     _max = int(df[column].max())
@@ -95,7 +117,7 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
                     )
                 elif column == "RATING":
                     _min = float(0)
-                    _max = float(df[column].max())
+                    _max = float(df[column].max()) # Bu 10.0 da olabilir.
                     step = 0.5
                     user_num_input = right.slider(
                         f"Values for {column}",
@@ -120,7 +142,8 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
                 user_date_input = right.date_input(
                     f"Values for {column}",
                     value=(
-                        df[column].min(),
+                        #df[column].min(),
+                        datetime.date(2009, 8, 1), # Skor vermeye başladığımız min tarih 2009-08-22
                         df[column].max(),
                     ),
                 )
@@ -133,7 +156,7 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
                     f"Substring or regex in {column}",
                 )
                 if user_text_input:
-                    df = df[df[column].str.contains(user_text_input)]
+                    df = df[df[column].str.contains(user_text_input, case=False, na=False)]
 
     return df
 
@@ -157,15 +180,12 @@ def show(navigate_to):
         # Create a new DataFrame with only the selected columns
         #new_df = df[selected_columns].copy()
         df = st.session_state.all_data_df[selected_columns].copy()
+        df["ORIGINAL_TITLE"] = df["ORIGINAL_TITLE"].fillna('') # Because these records causing problem while filtering
+        df["PRIMARY_TITLE"] = df["PRIMARY_TITLE"].fillna('') # Because these records causing problem while filtering
 
     st.dataframe(filter_dataframe(df), hide_index=True, )
     #column_order=("ID", "TYPE", "TITLE_TYPE", "IMDB_TT", "ORIGINAL_TITLE", "PRIMARY_TITLE", "RELEASE_YEAR", "STATUS", "SCORE", "SCORE_DATE", "DURATION", "RATING", "RATING_COUNT", "GENRES", "WATCH_GRADE"), 
 
-    st.write(
-        """This app accomodates the blog [here](https://blog.streamlit.io/auto-generate-a-dataframe-filtering-ui-in-streamlit-with-filter_dataframe/)
-        and walks you through one example of how the Streamlit
-        Data Science Team builds add-on functions to Streamlit.
-        """
-    )
 
-    filter_dataframe(df)
+
+    #filter_dataframe(df)
