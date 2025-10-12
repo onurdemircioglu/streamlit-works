@@ -20,7 +20,7 @@ def todays_recommendation():
     random_pick_df = st.session_state.all_data_df.copy()
 
     if len(result_recommendation) == 0:
-        st.write("No data found")
+        #st.write("No data found")
         
         # Filter for movies and TV shows, excluding "unknown" type
         random_pick_df = random_pick_df[random_pick_df["TYPE"].isin(["Movie", "TV Series"])]
@@ -29,9 +29,20 @@ def todays_recommendation():
         filtered_df = random_pick_df[
             (random_pick_df["RATING"] >= 6) &  # Rating should be >= 6
             (random_pick_df["RATING_COUNT"] > 6000) &  # Rating count should be > 5000
-            (~random_pick_df["STATUS"].isin(["TO BE WATCHED", "N2WATCH", "IN PROGRESS", "DROPPED"])) & # Status should not be in excluded statuses
+            (~random_pick_df["STATUS"].isin(["TO BE WATCHED", "N2WATCH", "WATCHED", "MAYBE", "IN PROGRESS", "DROPPED"])) & # Status should not be in excluded statuses
             (random_pick_df["ORIGINAL_TITLE"].notna() | random_pick_df["PRIMARY_TITLE"].notna())  # At least one of ORIGINAL_TITLE or PRIMARY_TITLE should not be null
         ]
+
+        """
+        SELECT * 
+        FROM MAIN_DATA
+        WHERE 1=1
+            AND RATING >= 6
+            AND RATING_COUNT > 6000
+            AND STATUS NOT IN ('TO BE WATCHED', 'N2WATCH', 'IN PROGRESS', 'DROPPED')
+            AND (ORIGINAL_TITLE IS NOT NULL OR PRIMARY_TITLE IS NOT NULL)
+            AND TYPE IN ( 'Movie', 'TV Series')
+        """
 
         # **Exclude previously recommended titles**
         if not previous_recommendations.empty:
@@ -122,9 +133,6 @@ def todays_recommendation():
             st.write(f"**Genres**: {selected_record['GENRES']}")            
         else:
             st.write("No recommendation")
-
-
-
 
 
 

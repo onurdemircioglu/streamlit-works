@@ -125,58 +125,5 @@ def show(navigate_to):
         # Display in Streamlit
         st.pyplot(fig)
 
-        # ************************************************ #
-        # ************************************************ #
-        # ************************************************ #
-
-        # Picking a random record for recommendation
-        random_pick_df = st.session_state.all_data_df.copy()
-
-        # Filter for movies and TV shows, excluding "unknown" type
-        random_pick_df = random_pick_df[random_pick_df["TYPE"].isin(["Movie", "TV Series"])]
-
-        # Apply the given conditions
-        filtered_df = random_pick_df[
-            (random_pick_df["RATING"] >= 6) &  # Rating should be >= 5.5
-            (random_pick_df["RATING_COUNT"] > 6000) &  # Rating count should be > 5000
-            (~random_pick_df["STATUS"].isin(["TO BE WATCHED", "N2WATCH", "IN PROGRESS", "DROPPED"])) & # Status should not be in excluded statuses
-            (random_pick_df["ORIGINAL_TITLE"].notna() | random_pick_df["PRIMARY_TITLE"].notna())  # At least one of ORIGINAL_TITLE or PRIMARY_TITLE should not be null
-        ]
-
-        # Check if there are any records that match the criteria
-        if not filtered_df.empty:
-            # Randomly select one record from the filtered data
-            random_record = filtered_df.sample(n=1).iloc[0]
-
-            # Determine the title to display
-            if pd.isna(random_record["PRIMARY_TITLE"]):
-                display_title = random_record["ORIGINAL_TITLE"]
-            else:
-                display_title = f"{random_record['ORIGINAL_TITLE']} - {random_record['PRIMARY_TITLE']}"
-
-            # Convert RATING_COUNT to integer (remove decimal point)
-            rating_count_int = int(random_record["RATING_COUNT"])
-
-            # Convert RELEASE_YEAR to integer (remove decimal point)
-            if random_record["RELEASE_YEAR"]:
-                release_year_int = int(random_record["RELEASE_YEAR"])
-
-            imdb_link_formatted = "https://www.imdb.com/title/" + str(random_record['IMDB_TT'])
-            
-            
-            # Display the random record's information
-            st.subheader(f"Today's Recommendation: {display_title}")
-            #st.write(f"**IMDb Link**: {random_record['IMDB_TT']}")
-            st.write(f"**IMDb Link**: {imdb_link_formatted}")
-            st.write(f"**Type**: {random_record['TYPE']}")
-            st.write(f"**Release Year**: {release_year_int}")
-            st.write(f"**Rating**: {random_record['RATING']}")
-            st.write(f"**Rating Count**: {rating_count_int}")
-            st.write(f"**Status**: {random_record['STATUS']}")
-            st.write(f"**Genres**: {random_record['GENRES']}")
-
-            #st.write("movies sayfasına dataframe koyalım orada bırakalım bugün")
-        else:
-            st.write("No records found that match the criteria.")
     else:
         st.warning("No data available. Please load data first.")

@@ -2,6 +2,7 @@ import streamlit as st
 #import pandas as pd
 from utils import my_functions
 from utils.utils import display_menu_buttons
+from utils.data import load_all_data
 
 
 obj = my_functions.MyClass()
@@ -38,19 +39,23 @@ def tv_shows_actions():
 
     # Right Column: Episode Actions
     with col_right:
-        
         st.subheader("Episode Actions")
         new_min_episode = st.number_input("New Min Episode No", min_value=101, value=101, step=1)
-        new_max_episode = st.number_input("New Max Episode No", min_value=new_min_episode, value=new_min_episode, step=1)
+        #new_max_episode = st.number_input("New Max Episode No", min_value=new_min_episode, value=new_min_episode, step=1)
+        new_max_episode = st.number_input("New Max Episode No", min_value=0, step=1)
 
         action_insert, action_mark_as_watched = st.columns(2)
         with action_insert:
             if st.button("Insert New Episodes", use_container_width=True):
                 obj.insert_new_episodes(selected_show_id, new_min_episode, new_max_episode)
+                load_all_data()
+                st.rerun()
         
         with action_mark_as_watched:
             if st.button("Mark as Watched", use_container_width=True):
                 obj.mark_episode_as_watched(selected_show_id, new_min_episode, new_max_episode)
+                load_all_data()
+                st.rerun()
     
     st.divider()
     st.subheader("Detail of the TV Show")
@@ -73,8 +78,11 @@ def show(navigate_to):
         "all_data_df" in st.session_state 
         and "tv_shows_last_watched_df" in st.session_state
     ):
+        tv_shows_following_count = len(st.session_state.tv_shows_last_watched_df)
+        
         # Last 30 Days Watched
-        st.write("Latest TV Shows I am following.")
+        st.write(f"Latest TV Shows I am following.")
+        st.write(f"Active TV Shows count: {tv_shows_following_count} " ) 
         #st.image("https://via.placeholder.com/300x200", caption="Example Movie")
         tv_shows_last_watched_df2 = st.session_state.tv_shows_last_watched_df.copy()
         
@@ -82,7 +90,7 @@ def show(navigate_to):
         tv_shows_last_watched_df2 = tv_shows_last_watched_df2.sort_values(["MAX_WATCHED_DATE", "TITLE"], ascending=[False, True]) # .reset_index(drop=True)
         
         # Printing
-        st.dataframe(tv_shows_last_watched_df2.head(20), hide_index=True, column_order=("ID", "TYPE", "IMDB_TT", "TITLE", "RELEASE_YEAR", "DURATION", "RATING", "RATING_COUNT", "GENRES", "MAX_WATCHED_DATE", "LATEST_EPISODE"))
+        st.dataframe(tv_shows_last_watched_df2, hide_index=True, column_order=("ID", "TYPE", "IMDB_TT", "TITLE", "RELEASE_YEAR", "RATING", "GENRES", "MAX_WATCHED_DATE", "LATEST_EPISODE"))
 
     
     st.divider()

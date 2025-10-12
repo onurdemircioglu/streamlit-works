@@ -191,7 +191,7 @@ def update_database(): # update_database_record
                 cursor.execute(update_syntax_final, update_syntax_middle_values)
                 conn.commit()
                 st.success("✅ Database updated successfully!")
-            except:
+            except Exception as e:
                 st.error(f"Database update error")
             finally:
                 cursor.close()
@@ -215,8 +215,6 @@ def show(navigate_to):
     # Pre-check
     if find_record_button:
         
-
-
         imdb_title_format_check = obj.check_imdb_title(imdb_link)
         imdb_in = obj.imdb_converter(imdb_link, "in")
 
@@ -258,95 +256,116 @@ def show(navigate_to):
             #imdb_tt_original = df.iloc[0, 1] if not df.empty else ""
             imdb_tt_original = fetched_record.get("IMDB_TT", "")
             col_original.text_input("Original IMDb TT", value=imdb_tt_original, disabled=True, key="imdb_tt_original")
-            col_new.text_input("New IMDb TT", key="imdb_tt_new")
+            #col_new.text_input("New IMDb TT", key="imdb_tt_new")
+            col_new.text_input("New IMDb TT", value=st.session_state.get("imdb_tt_new", ""), key="imdb_tt_new")
+
 
             #type_original = df.iloc[0, 2] if not df.empty else ""
             type_original = fetched_record.get("TYPE", "")
             col_original.text_input("Original Type", value=type_original, disabled=True, key="type_original")
-            col_new.selectbox(
-            "New Type",
-            title_type_options_keys,
-            #("1","2","3"),
-            index=0,  # Default: "Unknown"
-            key="type_new"
-            )
+            #col_new.selectbox("New Type", title_type_options_keys, index=0, key="type_new") # index=0 => Default: "Unknown"
+            col_new.selectbox("New Type", title_type_options_keys, index=title_type_options_keys.index(st.session_state.get("type_new", "Select a value")), key="type_new")
+
 
             #original_title_original = df.iloc[0, 3] if not df.empty else ""
             original_title_original = fetched_record.get("ORIGINAL_TITLE", "")
             col_original.text_input("Original Title", value=original_title_original, disabled=True, key="original_title_original")
-            col_new.text_input("New Original Title", value="", key="original_title_new")
+            #col_new.text_input("New Original Title", value="", key="original_title_new")
+            col_new.text_input("New Original Title", value=st.session_state.get("original_title_new", ""), key="original_title_new")
 
             #primary_title_original = df.iloc[0, 4] if not df.empty else ""
             primary_title_original = fetched_record.get("PRIMARY_TITLE", "")
             col_original.text_input("Primary Title", value=primary_title_original, disabled=True, key="primary_title_original")
-            col_new.text_input("New Primary Title", value="", key="primary_title_new")
+            #col_new.text_input("New Primary Title", value="", key="primary_title_new")
+            col_new.text_input("New Primary Title", value=st.session_state.get("primary_title_new", ""), key="primary_title_new")
 
             #release_year_original = df.iloc[0,5] if not df.empty else ""
             release_year_original = fetched_record.get("RELEASE_YEAR", "")
             col_original.text_input("Release Year", value=release_year_original, disabled=True,key="release_year_original")
-            col_new.number_input("New Release Year", value=None, min_value=1888, max_value=st.session_state.current_year, key="release_year_new")
+            #col_new.number_input("New Release Year", value=None, min_value=1888, max_value=st.session_state.current_year, key="release_year_new")
+            col_new.number_input("New Release Year", min_value=1888, max_value=st.session_state.current_year, value=st.session_state.get("release_year_new", None), key="release_year_new") 
 
             #status_original = df.iloc[0,6] if not df.empty else ""
             status_original = fetched_record.get("STATUS", "")
             col_original.text_input("Status", value=status_original, disabled=True,key="status_original")
-            col_new.selectbox(
-            "New Status",
-            status_options,
-            #horizontal=True,  # Makes options appear inline
-            index=0,  # Default: "POTENTIAL"
-            key="status_new"
-            )
+            #col_new.selectbox("New Status", status_options, index=0, key="status_new" ) # index=0 =>Default: "POTENTIAL", #horizontal=True,  # Makes options appear inline
+            col_new.selectbox("New Status", status_options, index=status_options.index(st.session_state.get("status_new", "Select a value")), key="status_new") 
             
             #score_original = df.iloc[0,7] if not df.empty else ""
             score_original = fetched_record.get("SCORE", "")
             col_original.text_input("Score", value=score_original, disabled=True,key="score_original")
-            col_new.number_input("New Score", min_value=0, max_value=100, step=5, key="score_new") # It is define as text_input because when it is number_input min_valus is automatically 0 or 0.00
+            #col_new.number_input("New Score", min_value=0, max_value=100, step=5, key="score_new")
+            col_new.number_input("New Score", min_value=0, max_value=100, step=5, value=st.session_state.get("score_new", 0), key="score_new")  
 
             #score_date_original = df.iloc[0,8] if not df.empty else ""
             score_date_original = fetched_record.get("SCORE_DATE", "")
             col_original.text_input("Score Date", value=score_date_original, disabled=True, key="score_date_original")
-            col_new.date_input("New Score Date", value=None, key="score_date_new", ) #value=st.session_state.current_day,
+            #col_new.date_input("New Score Date", value=None, key="score_date_new", ) #value=st.session_state.current_day,
+            col_new.date_input("New Score Date", value=st.session_state.get("score_date_new", None), key="score_date_new")
 
             #duration_original = df.iloc[0,9] if not df.empty else ""
             duration_original = fetched_record.get("DURATION", "")
             col_original.text_input("Duration", value=duration_original, disabled=True, key="duration_original")
-            col_new.number_input("New Duration", min_value=0, value=0, key="duration_new")
+            #col_new.number_input("New Duration", min_value=0, value=0, key="duration_new")
+            col_new.number_input("New Duration", min_value=0, value=st.session_state.get("duration_new", 0), key="duration_new")
 
             #imdb_rating_original = df.iloc[0,10] if not df.empty else ""
             imdb_rating_original = fetched_record.get("RATING", "")
             col_original.number_input("IMDb Rating", value=imdb_rating_original, disabled=True, format="%.1f", key="imdb_rating_original")
-            col_new.number_input("New IMDb Rating", min_value=0.0, max_value=10.0, step=0.10, format="%.1f", key="imdb_rating_new")
+            #col_new.number_input("New IMDb Rating", min_value=0.0, max_value=10.0, step=0.10, format="%.1f", key="imdb_rating_new")
+            col_new.number_input("New IMDb Rating", min_value=0.0, max_value=10.0, step=0.10, format="%.1f", value=st.session_state.get("imdb_rating_new", 0.0), key="imdb_rating_new")
 
             #imdb_rating_count_original = df.iloc[0,11] if not df.empty else ""
             imdb_rating_count_original = fetched_record.get("RATING_COUNT", "")
             col_original.text_input("IMDb Rating Count", value=imdb_rating_count_original, disabled=True, key="imdb_rating_count_original")
-            col_new.number_input("New IMDb Rating Count", min_value=0, value=0, key="imdb_rating_count_new")
+            #col_new.number_input("New IMDb Rating Count", min_value=0, value=0, key="imdb_rating_count_new")
+            col_new.number_input("New IMDb Rating Count", min_value=0, value=st.session_state.get("imdb_rating_count_new",0), key="imdb_rating_count_new")
 
             #genres_original = df.iloc[0,12] if not df.empty else ""
             genres_original = fetched_record.get("GENRES", "")
             col_original.text_input("Genres", value=genres_original, disabled=True, key="genres_original")
-            col_new.multiselect(
-                'New Genres',
+            """col_new.multiselect(
+                "New Genres",
                 ["Select a value", "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary", "Drama", "Family", "Fantasy", "Film-Noir", "Game-Show", "History",
-                "Horror", "Music", "Musical", "Mystery", "News", "Reality-TV", "Romance", "Sci-Fi", "Short", "Sport", "Talk-Show", "Thriller", "War", "Western"], default="Select a value", key="genres_new")
+                "Horror", "Music", "Musical", "Mystery", "News", "Reality-TV", "Romance", "Sci-Fi", "Short", "Sport", "Talk-Show", "Thriller", "War", "Western"], default="Select a value", key="genres_new")"""            
+            col_new.multiselect(
+                "New Genres",
+                ["Select a value", "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary", "Drama", "Family", "Fantasy", "Film-Noir", "Game-Show", "History",
+                "Horror", "Music", "Musical", "Mystery", "News", "Reality-TV", "Romance", "Sci-Fi", "Short", "Sport", "Talk-Show", "Thriller", "War", "Western"],
+                default=st.session_state.get("genres_new", ["Select a value"]),  # This line has been changed
+                key="genres_new"
+            )
+
 
             #watch_grade_original = df.iloc[0,13] if not df.empty else ""
             watch_grade_original = fetched_record.get("WATCH_GRADE", "")
             col_original.text_input("Watch Grade", value=watch_grade_original, disabled=True, key="watch_grade_original")
-            col_new.number_input("New Watch Grade", min_value=0, max_value=10, value=0, key="watch_grade_new")
+            #col_new.number_input("New Watch Grade", min_value=0, max_value=10, value=0, key="watch_grade_new")
+            col_new.number_input("New Watch Grade", min_value=0, max_value=10, value=st.session_state.get("watch_grade_new",0), key="watch_grade_new")
 
             #beyazperde_link_original = df.iloc[0, 14] if not df.empty else ""
             beyazperde_link_original = fetched_record.get("BEYAZPERDE_LINK", "")
             col_original.text_input("Beyazperde Link", value=beyazperde_link_original, disabled=True, key="beyazperde_link_original")
-            col_new.text_input("New Beyazperde Link", value="", key="beyazperde_link_new")
+            #col_new.text_input("New Beyazperde Link", value="", key="beyazperde_link_new")
+            col_new.text_input("New Beyazperde Link", value=st.session_state.get("beyazperde_link_new", ""), key="beyazperde_link_new") 
 
             
 
-
         update_record = st.button("Update Database", key="update_database")
+        #clear_form = st.button("Clear All Fields", key="clear_form")
 
         if update_record:
             #st.write("update_record is clicked")
             update_database()
 
-
+        if st.button("Clear All Fields"):
+            for key in [
+                "imdb_tt_new", "type_new", "original_title_new", "primary_title_new",
+                "release_year_new", "status_new", "score_new", "score_date_new",
+                "duration_new", "imdb_rating_new", "imdb_rating_count_new",
+                "genres_new", "watch_grade_new", "beyazperde_link_new"
+            ]:
+                if key in st.session_state:
+                    del st.session_state[key]
+            st.rerun()
+        

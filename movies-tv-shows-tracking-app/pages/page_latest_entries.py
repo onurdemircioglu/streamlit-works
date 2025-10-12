@@ -21,4 +21,5 @@ def show(navigate_to):
     conn.close()
 
     st.dataframe(last_entries, hide_index=True)
-    st.rerun()
+    #st.rerun()
+    # TODO: burada rerun olmaması gerekiyor galiba. bir de bunu ayrı function olarak yazalım (C:\Users\Onurdemir\Documents\Projects\budget_management\pages\page_latest_entries.py)

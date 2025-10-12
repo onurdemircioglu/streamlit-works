@@ -22,6 +22,7 @@ def show(navigate_to):
         # Favorite Movies (High Rankings)
         movies_high_scored_df = st.session_state.movies_watched_df.copy()
         movies_high_scored_df = movies_high_scored_df[movies_high_scored_df["SCORE"] >= 70].sort_values(["SCORE", "SCORE_DATE", "ORIGINAL_TITLE"], ascending=[False, False, True])
+        movies_high_scored_df = movies_high_scored_df.head(100)
 
         # Plan to watch (based on watch grade)
         plan_to_watch_df = st.session_state.all_movies_df.copy()
@@ -32,14 +33,14 @@ def show(navigate_to):
     tab1, tab2, tab3 = st.tabs(["📅 Upcoming", "✅ Watched", "⭐ Favorites"])
 
     with tab1:
-        st.write("Movies I plan to watch.")
+        st.write("Movies I plan to watch (Top 20).")
         st.dataframe(plan_to_watch_df, hide_index=True, column_order=("ID", "TYPE", "IMDB_TT", "ORIGINAL_TITLE", "PRIMARY_TITLE", "RELEASE_YEAR", "STATUS", "DURATION", "RATING", "RATING_COUNT", "GENRES", "WATCH_GRADE"))
         
 
     with tab2:
-        st.write("Last Watched 20 Movies")
+        st.write("Last Watched 20 Movies (Last 30 days).")
         st.dataframe(movies_watched_last_30_days_df, hide_index=True, column_order=("ID", "TYPE", "IMDB_TT", "ORIGINAL_TITLE", "PRIMARY_TITLE", "RELEASE_YEAR", "SCORE", "SCORE_DATE", "DURATION", "RATING", "RATING_COUNT", "GENRES"))
 
     with tab3:
-        st.write("My favorite movies.")
+        st.write("My favorite movies (Only Top 100).")
         st.dataframe(movies_high_scored_df, hide_index=True, column_order=("ID", "TYPE", "IMDB_TT", "ORIGINAL_TITLE", "PRIMARY_TITLE", "RELEASE_YEAR", "SCORE", "SCORE_DATE", "DURATION", "RATING", "RATING_COUNT", "GENRES"))
