@@ -14,16 +14,30 @@ DB_PATH = os.path.join(*path_parts, "movies_tv_shows.db")"""
 
 
 # Get the folder where the current script is (for example: utils/)
-script_dir = os.path.dirname(os.path.abspath(__file__))
+#script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Get the absolute path of the current file
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Go one level up to reach the app folder (if script is in utils/)
-app_dir = os.path.dirname(script_dir)
+#app_dir = os.path.dirname(script_dir)
+
+
+# Try both locations (local / deployed)
+possible_paths = [
+    os.path.join(BASE_DIR, "..", "database", "movies_tv_shows.db"),  # local structure
+    os.path.join(BASE_DIR, "..", "movies_tv_shows.db"),              # GitHub root (Streamlit Cloud)
+]
+
 
 # Build path to the DB file inside the app folder
 #DB_PATH = os.path.join(app_dir, "movies_tv_shows.db")
 # 🔁 This line has been changed
 #DB_PATH = os.path.join(app_dir, "database", "movies_tv_shows.db")
-DB_PATH = "movies_tv_shows.db"
+
+# Pick the one that exists
+DB_PATH = next((p for p in possible_paths if os.path.exists(p)), possible_paths[-1])
+
 
 
 
@@ -388,3 +402,4 @@ class MyClass:  # ✅ Make sure this class is at the top level
         cursor.close()
 
         conn.close()
+
