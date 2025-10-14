@@ -38,6 +38,7 @@ possible_paths = [
 # Pick the one that exists
 DB_PATH = next((p for p in possible_paths if os.path.exists(p)), possible_paths[-1])
 
+print("Using database path:", DB_PATH)
 
 
 
@@ -402,4 +403,5 @@ class MyClass:  # ✅ Make sure this class is at the top level
         cursor.close()
 
         conn.close()
+
 
