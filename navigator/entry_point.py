@@ -7,7 +7,7 @@ with col1:
 
     st.markdown("""
     My Works
-    - [Movies TV Shows Tracking](https://movies-tv-shows-tracking-app-4y2yfuuupgb7bhsya4p6mb.streamlit.app/)
+    - [Movies TV Shows Tracking](https://app-works-krng63v6evqdnpxntsv2xf.streamlit.app/)
     
     - [Personal Finance Assistant](https://app-works-hxohzys9hwkb4xirekx8kf.streamlit.app/)
     
