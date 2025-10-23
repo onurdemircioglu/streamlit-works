@@ -14,6 +14,11 @@ with col1:
     - [Wheel of Fortune](https://app-works-e4rh8t2hha8jnxepsvhjxa.streamlit.app/)
                 
     - [Word Finder](https://app-works-jh6nvb34tfu4kmgcansjwp.streamlit.app/)
+    
+    - [Password Generator](https://app-works-j2dpbov2nzsf8fbapv78d2.streamlit.app/)               
+    
+                
+    - [Habit Tracker](www.google.com/)
     """)
 
 with col2:
