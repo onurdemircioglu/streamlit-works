@@ -48,7 +48,7 @@ if "word_data_df" not in st.session_state:
 
 if "word_length" not in st.session_state:
     if "word_data_df" not in st.session_state:
-        max_len = 20
+        # max_len = 20
         
         # Word length selection
         st.session_state.word_length = 5
@@ -184,3 +184,4 @@ with col_results:
     
     # Show results
     st.dataframe(filtered_df, hide_index=True)
+
