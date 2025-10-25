@@ -93,7 +93,9 @@ with col_filters:
     contains = st.text_input("Contains...", key="contains")
     exclude_letters = st.text_input("Exclude letters...", key="exclude_letters")
     position_input = st.text_input("Letter at position (e.g., 2:a,4:t)...", key="position_input")
-    unique_letters = st.checkbox("Unique Letters?", value=True, key="unique_letters")
+    exclude_position_input = st.text_input("❌ Excluded letter at position (e.g., 2:a,4:t)...", key="exclude_position_input")
+    unique_letters = st.checkbox("Unique Letters?", value=False, key="unique_letters")
+
 
 
     # Apply filters
@@ -144,6 +146,26 @@ with col_filters:
         filtered_df = filtered_df[
             filtered_df["word"].apply(lambda w: all(w[i] == l for i, l in pos_dict.items() if i < len(w)))
         ]
+
+    # Filter excluded position letter pairs
+    if exclude_position_input:
+        exclude_pos_dict = {}
+        for item in exclude_position_input.split(","):
+            if ":" in item:
+                pos, letter = item.split(":")
+                if pos.isdigit():
+                    exclude_pos_dict[int(pos) - 1] = letter  # 0-based index
+
+        # Apply filter
+        filtered_df = filtered_df[
+            filtered_df["word"].apply(
+                lambda w: all(
+                    (i >= len(w)) or (w[i] != l)
+                    for i, l in exclude_pos_dict.items()
+                )
+            )
+        ]
+
     
 
     # Filter by "Unique Letters?"
@@ -157,5 +179,8 @@ with col_filters:
 with col_results:
     st.write(f"Word Count: {len(filtered_df)}")
 
+    # Sorting alphabetically beforing showing the results
+    filtered_df = filtered_df.sort_values(filtered_df.columns[0])
+    
     # Show results
-    st.dataframe(filtered_df.head(20), hide_index=True)
+    st.dataframe(filtered_df, hide_index=True)
