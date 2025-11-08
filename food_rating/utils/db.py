@@ -1,8 +1,14 @@
 # utils/db.py
+import os
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path("data/food_ratings.db")
+#DB_PATH = Path("data/food_ratings.db")
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "data", "food_ratings.db")
+
+#conn = sqlite3.connect(DB_PATH)
 
 def get_connection():
     """Create and return a SQLite connection."""
@@ -87,4 +93,5 @@ def insert_lookup_value(table_name, name):
     cursor = conn.cursor()
     cursor.execute(f"INSERT OR IGNORE INTO {table_name} (NAME) VALUES (?)", (name,))  # This line has been added or changed
     conn.commit()
+
     conn.close()
