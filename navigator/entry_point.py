@@ -15,8 +15,9 @@ with col1:
                 
     - [Word Finder](https://app-works-jh6nvb34tfu4kmgcansjwp.streamlit.app/)
     
-    - [Password Generator](https://app-works-j2dpbov2nzsf8fbapv78d2.streamlit.app/)               
-    
+    - [Password Generator](https://app-works-j2dpbov2nzsf8fbapv78d2.streamlit.app/)
+
+    - [Food Rating](https://app-works-psg9zqkunh4qxpfsihtqjt.streamlit.app/)
                 
     - [Habit Tracker](www.google.com/)
     """)
