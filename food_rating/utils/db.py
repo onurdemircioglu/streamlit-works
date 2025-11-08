@@ -3,13 +3,22 @@ import os
 import sqlite3
 from pathlib import Path
 
-#DB_PATH = Path("data/food_ratings.db")
 
+
+# Get the absolute path of the current file
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-#DB_PATH = os.path.join(BASE_DIR, "data", "food_ratings.db")
-DB_PATH = os.path.join(BASE_DIR, "..", "food_ratings.db")
 
-#conn = sqlite3.connect(DB_PATH)
+# Try both locations (local / deployed)
+possible_paths = [
+    os.path.join(BASE_DIR, "..", "data", "food_ratings.db"),  # local structure
+    os.path.join(BASE_DIR, "..", "food_ratings.db"),              # GitHub root (Streamlit Cloud)
+]
+
+# Pick the one that exists
+DB_PATH = next((p for p in possible_paths if os.path.exists(p)), possible_paths[-1])
+
+
+
 
 def get_connection():
     """Create and return a SQLite connection."""
@@ -96,4 +105,5 @@ def insert_lookup_value(table_name, name):
     conn.commit()
 
     conn.close()
+
 
