@@ -17,7 +17,8 @@ st.markdown(
 )
 
 
-from pages import page_dashboard, page_entry, page_changelog, page_reports, page_reminders, page_manage_groups, page_types, page_banks, page_latest_entries, page_calculations, page_export, page_test
+from pages import page_dashboard, page_entry, page_changelog, page_reports, page_reminders, page_settings, page_latest_entries, page_calculations, page_export, page_test
+# page_manage_groups, page_types, page_banks
 from utils import data  # Import the data loading function
 from utils.utils import initialize_session_state
 
@@ -26,18 +27,19 @@ initialize_session_state()
 
 # ✅ Load data only once & store separately
 if (
-    "expenses_df" not in st.session_state
+    "reportable_expenses_df" not in st.session_state
     or "incomes_df" not in st.session_state
 
 ):
     # Load all data using the function from data.py
     (
-       expenses_df, incomes_df
+       reportable_expenses_df, incomes_df
     ) = data.load_all_data()
     
     # Store the data in session_state
-    st.session_state.expenses_df = expenses_df
+    # st.session_state.expenses_df = expenses_df
     st.session_state.incomes_df = incomes_df
+    st.session_state.reportable_expenses_df = reportable_expenses_df
 
     st.success("✅ Data loaded successfully!")
 
@@ -62,12 +64,8 @@ elif st.session_state.current_page == "page_entry":
     page_entry.show(navigate_to)
 elif st.session_state.current_page == "page_changelog":
     page_changelog.show(navigate_to)
-elif st.session_state.current_page == "page_manage_groups":
-    page_manage_groups.show(navigate_to)
-elif st.session_state.current_page == "page_types":
-    page_types.show(navigate_to)
-elif st.session_state.current_page == "page_banks":
-    page_banks.show(navigate_to)
+elif st.session_state.current_page == "page_settings":
+    page_settings.show(navigate_to)
 elif st.session_state.current_page == "page_latest_entries":
     page_latest_entries.show(navigate_to)
 elif st.session_state.current_page == "page_calculations":
