@@ -6,6 +6,8 @@ import altair as alt
 import math
 from utils.utils import display_menu_buttons
 from utils import my_functions
+from utils.streamlit_helpers import smart_selectbox
+# smart_text_input, smart_text_area, smart_number_input, smart_date_input, render_clear_button_with_confirmation
 
 
 obj = my_functions.MyClass()
@@ -16,18 +18,18 @@ def show_page_contents():
         
     # Access stored DataFrames
     if (
-        "expenses_df" in st.session_state 
+        "reportable_expenses_df" in st.session_state
     ):
         # Metrics
     
-# **************************************************************** PREPARING DATA FOR CHART - START **************************************************************** #
-        graph_data = st.session_state.expenses_df.copy()
+        # **************************************************************** PREPARING DATA FOR CHART - START **************************************************************** #
+        graph_data = st.session_state.reportable_expenses_df.copy()
 
         # Convert date column to datetime
-        graph_data["EXPENSE_DATE"] = pd.to_datetime(graph_data["EXPENSE_DATE"], format="%Y-%m-%d") # errors="coerce" will turn any truly invalid dates into NaT instead of crashing
+        #graph_data["EXPENSE_DATE"] = pd.to_datetime(graph_data["EXPENSE_DATE"], format="%Y-%m-%d") # errors="coerce" will turn any truly invalid dates into NaT instead of crashing
 
         # Create year-month column
-        graph_data["YEAR_MONTH"] = graph_data["EXPENSE_DATE"].dt.to_period("M").astype(str)
+        #graph_data["YEAR_MONTH"] = graph_data["EXPENSE_DATE"].dt.to_period("M").astype(str)
         
         # Converting the EXPENSE_AMOUNT into corret format before group and sum
         graph_data["EXPENSE_AMOUNT"] = (
@@ -38,7 +40,7 @@ def show_page_contents():
         )
 
         # Group and sum
-        monthly_totals = graph_data.groupby("YEAR_MONTH")["EXPENSE_AMOUNT"].sum().reset_index()
+        monthly_totals = graph_data.groupby("EXPENSE_PERIOD")["EXPENSE_AMOUNT"].sum().reset_index()
         monthly_totals["EXPENSE_AMOUNT"] = pd.to_numeric(monthly_totals["EXPENSE_AMOUNT"], errors="coerce").fillna(0)
         monthly_totals["% FROM PREV"] = monthly_totals["EXPENSE_AMOUNT"].pct_change() * 100
         monthly_totals["% FROM PREV"] = monthly_totals["% FROM PREV"].round(1)
@@ -47,8 +49,10 @@ def show_page_contents():
         monthly_totals["12M_MA"] = (monthly_totals["EXPENSE_AMOUNT"].rolling(window=12, min_periods=1).mean().round(1))
 
         # Calculate Year-over-Year Change
-        monthly_totals["YEAR"] = monthly_totals["YEAR_MONTH"].str[:4].astype(int)
-        monthly_totals["MONTH"] = monthly_totals["YEAR_MONTH"].str[5:7].astype(int)
+        #monthly_totals["YEAR"] = monthly_totals["YEAR_MONTH"].str[:4].astype(int)
+        monthly_totals["YEAR"] = monthly_totals["EXPENSE_PERIOD"].str[:4].astype(int)
+        #monthly_totals["MONTH"] = monthly_totals["YEAR_MONTH"].str[5:7].astype(int)
+        monthly_totals["MONTH"] = monthly_totals["EXPENSE_PERIOD"].str[5:7].astype(int)
 
         # Create previous year dataframe
         prev_year_df = monthly_totals[["YEAR", "MONTH", "EXPENSE_AMOUNT"]].copy()
@@ -105,17 +109,30 @@ def show_page_contents():
 
         monthly_totals["MoM %"] = monthly_totals.apply(format_label, axis=1)
         
+        
         # Average line on the chart
         show_avg_line = st.toggle("Show Month Average Line", value=True)
         
         # Number of months selection on chart (min 6, max 36)
-        chart_slider = st.slider("Months Selection", min_value=6, max_value=36, value=13, step=1)
+        chart_slider = st.slider("Months Selection", min_value=6, max_value=36, value=13, step=1, key="key_month_selection_1")
+
+        # Toggle to include/exclude future expenses
+        show_future = st.checkbox("Show Future Expenses", value=False)
         
         monthly_totals_filtered = (
-            monthly_totals.sort_values("YEAR_MONTH")
+            #monthly_totals.sort_values("YEAR_MONTH")
+            monthly_totals.sort_values("EXPENSE_PERIOD")
             .tail(chart_slider)
             .copy()
         )
+
+        # To filter future expenses
+        if not show_future:
+            today = pd.Timestamp.today()
+            #chart_data = monthly_totals_filtered[pd.to_datetime(monthly_totals_filtered["EXPENSE_PERIOD"], format="%Y-%m") <= today]
+            monthly_totals_filtered = monthly_totals_filtered[pd.to_datetime(monthly_totals_filtered["EXPENSE_PERIOD"], format="%Y-%m") <= today]
+
+
 
         # To select how many months for the highest expense selection
         top_x_slider = st.slider("Top Months Selection", min_value=1, max_value=round(int(chart_slider/2),0)+1, value=1, step=1)
@@ -133,10 +150,65 @@ def show_page_contents():
         monthly_totals_filtered["% FROM AVG"] = ((monthly_totals_filtered["EXPENSE_AMOUNT"] - avg_value) / avg_value) * 100
 
 
-# **************************************************************** PREPARING DATA FOR CHART - END **************************************************************** #
 
 
-# **************************************************************** CREATING CHART - START **************************************************************** #
+        # ************************************************************************************************************************************************ #
+        # Monthly Trend Chart Breakdown by Expense Groups 
+        graph_data_v2 = st.session_state.reportable_expenses_df.copy()
+
+        # --- Group by MONTH + CATEGORY (Expense Group) ---
+        #graph_data_v2["MONTH"] = pd.to_datetime(graph_data_v2["EXPENSE_DATE"]).dt.to_period("M").astype(str)
+
+        # Converting the EXPENSE_AMOUNT into corret format before group and sum
+        graph_data_v2["EXPENSE_AMOUNT"] = (
+            graph_data_v2["EXPENSE_AMOUNT"]
+            .astype(str)
+            .str.replace(",", ".", regex=False)
+            .astype(float)
+        )
+
+        # To filter future expenses
+        if not show_future:
+            today = pd.Timestamp.today()
+            graph_data_v2 = graph_data_v2[pd.to_datetime(graph_data_v2["EXPENSE_PERIOD"], format="%Y-%m") <= today]
+
+        # --- Group by MONTH + CATEGORY ---
+        grouped_df_v2 = (
+            graph_data_v2.groupby(["EXPENSE_PERIOD", "EXPENSE_GROUP"], as_index=False)["EXPENSE_AMOUNT"]
+            .sum()
+            .rename(columns={"EXPENSE_AMOUNT": "TOTAL_AMOUNT"})
+        )
+        
+        # --- Pivot for readability (not strictly required for Altair, but useful) ---
+        pivot_df = grouped_df_v2.pivot(index="EXPENSE_PERIOD", columns="EXPENSE_GROUP", values="TOTAL_AMOUNT").fillna(0).reset_index()
+
+        # --- Convert to long format for Altair ---
+        long_df = pivot_df.melt(id_vars="EXPENSE_PERIOD", var_name="Category", value_name="Amount")
+
+        # ✅ Convert to datetime for proper sorting & filtering
+        long_df["EXPENSE_PERIOD"] = pd.to_datetime(long_df["EXPENSE_PERIOD"], format="%Y-%m")
+
+
+
+
+        # ✅ Filter for the latest X months
+        #latest_months = long_df["EXPENSE_PERIOD"].dropna().sort_values(ascending=False).unique()[:chart_slider]
+        # ✅ Filter for the latest X months (IMPORTANT FIX)
+        latest_months = (
+            long_df["EXPENSE_PERIOD"]
+            .dropna()
+            .sort_values(ascending=True)  # Sort ascending first
+            .unique()[-chart_slider:]     # Take the LAST X months correctly
+        )
+        #filtered_df = long_df[long_df["EXPENSE_PERIOD"].isin(latest_months)]
+        filtered_df = long_df[long_df["EXPENSE_PERIOD"].isin(latest_months)].sort_values(by="EXPENSE_PERIOD")
+
+
+        # **************************************************************** PREPARING DATA FOR CHART - END **************************************************************** #
+
+
+
+        # **************************************************************** CREATING CHART - START **************************************************************** #
 
         # Creating Bar Chart
         with col_chart:
@@ -146,9 +218,17 @@ def show_page_contents():
             topx_idx = monthly_totals_filtered["EXPENSE_AMOUNT"].nlargest(top_x_slider).index
             monthly_totals_filtered.loc[topx_idx, "BAR_COLOR"] = "#FF4C4C"  # red for top 5
 
+            # Adjusting the chart title based on the future expense selection
+            if not show_future:
+                title_1=(f"Monthly Expenses (Last {chart_slider} Months)")
+            else:
+                title_1=(f"Monthly Expenses (Last {chart_slider} Months with Future Expenses)")
+
+
             # Altair base chart
             base = alt.Chart(monthly_totals_filtered).mark_bar().encode(
-                x=alt.X("YEAR_MONTH:N", title="Month", sort=None, axis=alt.Axis(labelAngle=-40)),
+                #x=alt.X("YEAR_MONTH:N", title="Period", sort=None, axis=alt.Axis(labelAngle=-40)),
+                x=alt.X("EXPENSE_PERIOD:N", title="Period", sort=None, axis=alt.Axis(labelAngle=-40)),
                 y=alt.Y(
                     "EXPENSE_AMOUNT:Q",
                     title="Total Expense",
@@ -157,21 +237,25 @@ def show_page_contents():
                 ),
                 color=alt.Color("BAR_COLOR:N", scale=None),  # use predefined color, no gradient
                 tooltip=[
-                    alt.Tooltip("YEAR_MONTH", title="Month"),
+                    #alt.Tooltip("YEAR_MONTH", title="Month"),
+                    alt.Tooltip("EXPENSE_PERIOD", title="Month"),
                     alt.Tooltip("EXPENSE_AMOUNT", format=",.0f", title="Amount (₺)"),
                     alt.Tooltip("% FROM AVG", format=".1f", title="% From Avg")
                 ]
             ).properties(
                 width=800,
                 height=450,
-                title=(f"Monthly Expenses (Last {chart_slider} Months)")
+                #title=(f"Monthly Expenses (Last {chart_slider} Months)")
+                title=title_1
+                
                 )
             
             # 12 Months Moving Average
             ma_line = alt.Chart(monthly_totals_filtered).mark_line(
                 color="orange", strokeWidth=2
             ).encode(
-                x="YEAR_MONTH:N",
+                #x="YEAR_MONTH:N",
+                x="EXPENSE_PERIOD:N",
                 y="12M_MA:Q"
             )
             
@@ -180,7 +264,8 @@ def show_page_contents():
                 fontSize=13,
                 color="black"
             ).encode(
-                x=alt.X("YEAR_MONTH:N", title="Month", sort=None, axis=alt.Axis(labelAngle=-40)),
+                #x=alt.X("YEAR_MONTH:N", title="Month", sort=None, axis=alt.Axis(labelAngle=-40)),
+                x=alt.X("EXPENSE_PERIOD:N", title="Month", sort=None, axis=alt.Axis(labelAngle=-40)),
                 y=alt.Y("EXPENSE_AMOUNT:Q"),
                 text=alt.Text("EXPENSE_AMOUNT:Q", format=",.0f")
                 #text=alt.Text("MoM %:N")
@@ -193,7 +278,8 @@ def show_page_contents():
                 dx=5, dy=-5,
                 fontSize=10
             ).encode(
-                x="YEAR_MONTH:N",
+                #x="YEAR_MONTH:N",
+                x="EXPENSE_PERIOD:N",
                 y="12M_MA:Q"
             )
 
@@ -217,80 +303,13 @@ def show_page_contents():
             # Display chart
             st.altair_chart(chart, use_container_width=False)
 
-# **************************************************************** CREATING CHART - END **************************************************************** #
 
-            st.divider()
-
-# **************************************************************** DETAILED BREAKDOWN CHART AND TABLE - START **************************************************************** #
-
-            # For Detailed Breakdown chart
-            selected_period = st.selectbox("Select a Month for Detailed Breakdown", options=monthly_totals_filtered["YEAR_MONTH"].tolist(), index=len(monthly_totals_filtered) - 1)  # latest month selected by default
-
-            conn = obj.get_db_connection()
-            #cursor = conn.cursor()
-            sql_query = f"""SELECT * FROM REPORTABLE_EXPENSES WHERE 1=1 AND EXPENSE_PERIOD = '{selected_period}'"""
-            
-            df_group_breakdown = pd.read_sql_query(sql_query, conn)
-            conn.close()
-
-            df_group_breakdown["EXPENSE_AMOUNT"] = (
-                df_group_breakdown["EXPENSE_AMOUNT"]
-                .astype(str)
-                .str.replace(",", ".", regex=False) # This is for number format (comma or dot)
-                .astype(float)
-            )
-
-            # Group and sum
-            group_summary = (
-                df_group_breakdown
-                .groupby("EXPENSE_GROUP")["EXPENSE_AMOUNT"]
-                .sum()
-                .reset_index()
-                .sort_values("EXPENSE_AMOUNT", ascending=False)
-            )
+            # **************************************************************** CREATING CHART - END **************************************************************** #
 
 
-            st.markdown(f"### 📊 Expense Breakdown for {selected_period}")
+            obj.draw_separator(color="#01055b", thickness=1, radius=12)
 
 
-
-            # Total sum for percentage calculation
-            total_expense = group_summary["EXPENSE_AMOUNT"].sum()
-            group_summary["PERCENT"] = (group_summary["EXPENSE_AMOUNT"] / total_expense * 100).round(1)
-
-            # Altair Pie Chart
-            pie_chart = alt.Chart(group_summary).mark_arc(innerRadius=50).encode(
-                theta=alt.Theta("EXPENSE_AMOUNT:Q", title=""),
-                color=alt.Color("EXPENSE_GROUP:N", legend=alt.Legend(title="Expense Group")),
-                tooltip=[
-                    alt.Tooltip("EXPENSE_GROUP:N", title="Group"),
-                    alt.Tooltip("EXPENSE_AMOUNT:Q", format=",.0f", title="Amount"),
-                    alt.Tooltip("PERCENT:Q", format=".1f", title="% of Total")
-                ]
-            ).properties(
-                width=400,
-                height=400,
-                title=f"Expense Group Distribution – {selected_period}"
-            )
-
-
-            # Actually there are sub columns :)
-            col1, col2 = st.columns([1, 1])
-
-            with col1:
-                st.altair_chart(pie_chart, use_container_width=True)
-
-            with col2:
-                st.dataframe(group_summary[["EXPENSE_GROUP", "EXPENSE_AMOUNT", "PERCENT"]], hide_index=True)
-
-
-# **************************************************************** DETAILED BREAKDOWN CHART AND TABLE - END **************************************************************** #
-
-
-# **************************************************************** TABLE DATA OF CHART - START **************************************************************** #
-
-        # ---- Table ----
-        with col_table:
             display_df = monthly_totals_filtered.drop(columns=["BAR_COLOR", "MoM %"]).copy()
             display_df["EXPENSE_AMOUNT"] = display_df["EXPENSE_AMOUNT"].apply(lambda x: f"{x:,.0f}")
             display_df["12M_MA"] = display_df["12M_MA"].apply(lambda x: f"{x:,.0f}")
@@ -345,15 +364,153 @@ def show_page_contents():
                 axis=0
             )
 
-
-            st.markdown("#### 📋 Monthly Totals Table")
+            
+            # **************************************************************** TABLE DATA OF CHART - START **************************************************************** #
+            #st.markdown("#### 📋 Monthly Totals Table")
+            
+            if not show_future:
+                #title_1=(f"Monthly Expenses (Last {chart_slider} Months)")
+                st.subheader("📋 Monthly Totals Table")
+            else:
+                #title_1=(f"Monthly Expenses (Last {chart_slider} Months with Future Expenses)")
+                st.subheader("📋 Monthly Totals Table with Future Expenses")
+            
             st.dataframe(styled_df, use_container_width=True, hide_index=True)
 
-# **************************************************************** TABLE DATA OF CHART - END **************************************************************** #
+            
 
-            st.divider()
+            # For Detailed Breakdown chart
+            #selected_period = st.selectbox("Select a Month for Detailed Breakdown", options=monthly_totals_filtered["YEAR_MONTH"].tolist(), index=len(monthly_totals_filtered) - 1)  # latest month selected by default
+            #selected_period = st.selectbox("Select a Month for Detailed Breakdown", options=monthly_totals_filtered["EXPENSE_PERIOD"].tolist(), index=len(monthly_totals_filtered) - 1)  # latest month selected by default
 
-# **************************************************************** FUTURE EXPENSES TABLE - START **************************************************************** #
+            selected_period = smart_selectbox(
+                label="Select a Month for Detailed Breakdown",
+                options=monthly_totals_filtered["EXPENSE_PERIOD"].tolist(),
+                default=monthly_totals_filtered["EXPENSE_PERIOD"].iloc[-1],  # ✅ last month as default
+                key="key_selected_period"
+            )
+
+
+
+
+            conn = obj.get_db_connection()
+            #cursor = conn.cursor()
+            sql_query = f"""SELECT * FROM REPORTABLE_EXPENSES WHERE 1=1 AND EXPENSE_PERIOD = '{selected_period}'"""
+            
+            df_group_breakdown = pd.read_sql_query(sql_query, conn)
+            conn.close()
+
+            df_group_breakdown["EXPENSE_AMOUNT"] = (
+                df_group_breakdown["EXPENSE_AMOUNT"]
+                .astype(str)
+                .str.replace(",", ".", regex=False) # This is for number format (comma or dot)
+                .astype(float)
+            )
+
+            # Group and sum
+            group_summary = (
+                df_group_breakdown
+                .groupby("EXPENSE_GROUP")["EXPENSE_AMOUNT"]
+                .sum()
+                .reset_index()
+                .sort_values("EXPENSE_AMOUNT", ascending=False)
+            )
+
+            # **************************************************************** TABLE DATA OF CHART - END **************************************************************** #
+
+            obj.draw_separator(color="#01055b", thickness=1, radius=12)
+            
+            # **************************************************************** DETAILED BREAKDOWN CHART AND TABLE - START **************************************************************** #
+            
+            #st.markdown(f"### 📊 Expense Breakdown for {selected_period}")
+            if not show_future:
+                st.subheader(f"📊 Expense Breakdown for {selected_period}")
+            else:
+                st.subheader(f"📊 Expense Breakdown for {selected_period} with Future Expenses")
+            
+
+            
+
+
+
+            # Total sum for percentage calculation
+            total_expense = group_summary["EXPENSE_AMOUNT"].sum()
+            group_summary["PERCENT"] = (group_summary["EXPENSE_AMOUNT"] / total_expense * 100).round(1)
+
+            # Altair Pie Chart
+            pie_chart = alt.Chart(group_summary).mark_arc(innerRadius=50).encode(
+                theta=alt.Theta("EXPENSE_AMOUNT:Q", title=""),
+                color=alt.Color("EXPENSE_GROUP:N", legend=alt.Legend(title="Expense Group")),
+                tooltip=[
+                    alt.Tooltip("EXPENSE_GROUP:N", title="Group"),
+                    alt.Tooltip("EXPENSE_AMOUNT:Q", format=",.0f", title="Amount"),
+                    alt.Tooltip("PERCENT:Q", format=".1f", title="% of Total")
+                ]
+            ).properties(
+                width=400,
+                height=400,
+                title=f"Expense Group Distribution – {selected_period}"
+            )
+
+
+            # Actually they are sub columns :)
+            col1, col2 = st.columns([1, 1])
+
+            with col1:
+                st.altair_chart(pie_chart, use_container_width=True)
+
+            with col2:
+                st.dataframe(group_summary[["EXPENSE_GROUP", "EXPENSE_AMOUNT", "PERCENT"]], hide_index=True)
+
+
+            # **************************************************************** DETAILED BREAKDOWN CHART AND TABLE - END **************************************************************** #
+
+            #obj.draw_separator(color="#01055b", thickness=1, radius=12)
+
+
+            # **************************************************************** CREATING CATEGORY BREAKDOWN - START **************************************************************** #
+
+        with col_table:
+            if not show_future:
+                st.subheader("📊 Monthly Expenses by Period (Stacked by Category)")
+            else:
+                st.subheader("📊 Monthly Expenses by Period (Stacked by Category) with Future Expenses")
+            
+
+            # ✅ Slider for Months Selection (reuse the same variable as your first chart)
+            #chart_slider = st.slider("Months Selection", min_value=6, max_value=36, value=13, step=1, key="key_month_selection_2")
+
+            # --- Create Stacked Column Chart ---
+            chart = (
+                alt.Chart(filtered_df)
+                .mark_bar()
+                .encode(
+                    x=alt.X(
+                        "yearmonth(EXPENSE_PERIOD):T",
+                        title="Period",
+                        axis=alt.Axis(labelAngle=-40)  # ✅ angled labels like first chart
+                    ),
+                    y=alt.Y("sum(Amount):Q", title="Total Amount"),
+                    color=alt.Color("Category:N", legend=alt.Legend(title="Expense Group")),
+                    tooltip=[
+                        alt.Tooltip("yearmonth(EXPENSE_PERIOD):T", title="Month"),
+                        alt.Tooltip("Category:N", title="Category"),
+                        alt.Tooltip("sum(Amount):Q", title="Amount", format=",.0f")
+                    ]
+                )
+                .properties(height=400)
+            )
+
+            st.altair_chart(chart, use_container_width=True)
+
+
+            # **************************************************************** CREATING CATEGORY BREAKDOWN - END **************************************************************** #
+
+
+            obj.draw_separator(color="#01055b", thickness=1, radius=12)
+
+
+            # **************************************************************** FUTURE EXPENSES TABLE - START **************************************************************** #
 
             # Future Expsense (Installments) Summary
             conn = obj.get_db_connection()
@@ -392,11 +549,11 @@ def show_page_contents():
                 st.markdown("**There is no future dated expense.**")
 
 
-# **************************************************************** FUTURE EXPENSES TABLE - END **************************************************************** #
+            # **************************************************************** FUTURE EXPENSES TABLE - END **************************************************************** #
 
-            st.divider()
+            obj.draw_separator(color="#01055b", thickness=1, radius=12)
 
-# **************************************************************** REMINDER TABLE - START **************************************************************** #
+            # **************************************************************** REMINDER TABLE - START **************************************************************** #
 
             st.subheader("🔍 View & Filter Reminders")
 
@@ -436,10 +593,20 @@ def show_page_contents():
                 st.dataframe(df_display, use_container_width=True, hide_index=True)
 
 
+                obj.draw_separator(color="#01055b", thickness=1, radius=12)
+
+
                 # User selects a reminder from the list by ID
                 st.markdown("### ⚙️ Manage Reminder")
 
-                selected_row = st.selectbox("Select a reminder", df["REMINDER_NAME"] + " — " + df["REMINDER_DATE"], index=0)
+                #selected_row = st.selectbox("Select a reminder", df["REMINDER_NAME"] + " — " + df["REMINDER_DATE"], index=0)
+                selected_row = smart_selectbox(
+                    label="Select a reminder",
+                    options=df["REMINDER_NAME"] + " — " + df["REMINDER_DATE"],
+                    default=0,
+                    key="key_selected_row"
+                )
+
                 selected_id = df[df["REMINDER_NAME"] + " — " + df["REMINDER_DATE"] == selected_row]["ID"].iloc[0]
                 st.write("Selected ID:", selected_id)
                 #st.write("type of selected_id ", type(selected_id))
@@ -480,7 +647,7 @@ def show_page_contents():
 
             else:
                 st.info("No reminders to show.")
-# **************************************************************** REMINDER TABLE - END **************************************************************** #
+            # **************************************************************** REMINDER TABLE - END **************************************************************** #
 
 
 

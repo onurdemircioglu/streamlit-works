@@ -3,7 +3,8 @@ import pandas as pd
 from datetime import date
 from utils.utils import display_menu_buttons
 from utils import my_functions
-
+from utils.streamlit_helpers import smart_selectbox, smart_number_input, smart_date_input, smart_text_area
+#smart_text_input, render_clear_button_with_confirmation
 
 obj = my_functions.MyClass()
 
@@ -20,14 +21,19 @@ def show_reminder_ui(obj):  # obj: your DB manager class
     reminder_name = st.text_input("Reminder Name")
     reminder_detail = st.text_area("Reminder Details", height=80)
     reminder_date = st.date_input("Reminder Date", value=date.today())
-    reminder_category = st.selectbox("Reminder Category", ["Utility", "Loan", "Subscription", "Bill", "Other"])
+    #reminder_category = st.selectbox("Reminder Category", ["Utility", "Loan", "Subscription", "Bill", "Other"])
+    reminder_category = smart_selectbox(label="Reminder Category", options=["Utility", "Loan", "Subscription", "Bill", "Other"], key="key_reminder_category")
 
-    recurrence_type = st.selectbox("Recurrence Type", ["none", "weekly", "monthly", "yearly"])
-    recurrence_interval = st.number_input("Recurrence Interval", min_value=1, value=1, help="Every X weeks/months etc.")
+    #recurrence_type = st.selectbox("Recurrence Type", ["none", "weekly", "monthly", "yearly"])
+    recurrence_type = smart_selectbox(label="Recurrence Type", options=["none", "weekly", "monthly", "yearly"], key="key_recurrence_type")
+    #recurrence_interval = st.number_input("Recurrence Interval", min_value=1, value=1, help="Every X weeks/months etc.")
+    recurrence_interval = smart_number_input(label="Recurrence Interval", min_value=1, default=1, key="key_recurrence_interval")
+
 
     is_active = st.checkbox("Active?", value=True)
     is_done = st.checkbox("Done?", value=False)
-    done_date = st.date_input("Done Date", value=None) if is_done else None
+    #done_date = st.date_input("Done Date", value=None) if is_done else None
+    done_date = smart_date_input(label="Done Date", default=None, key="key_done_date") if is_done else None
 
     # --- Add New Reminder ---
     if mode == "Add New Reminder":
@@ -53,10 +59,13 @@ def show_reminder_ui(obj):  # obj: your DB manager class
     else:
         all_reminders = obj.get_all_reminders()
         reminder_dict = {f"{r['ID']} - {r['REMINDER_NAME']}": r["ID"] for r in all_reminders}
-        selected = st.selectbox("Select Reminder to Update", list(reminder_dict.keys()))
+        #selected = st.selectbox("Select Reminder to Update", list(reminder_dict.keys()))
+        selected = smart_selectbox(label="Select Reminder to Update", options=list(reminder_dict.keys()), key="key_selected")
 
         if st.button("✏️ Update Reminder"):
-            reminder_id = reminder_dict[selected]
+            #reminder_id = reminder_dict[selected]
+            reminder_id = reminder_dict[selected] if selected else None
+
             success = obj.update_reminder(
                 reminder_id,
                 reminder_date.strftime("%Y-%m-%d"),
@@ -91,7 +100,8 @@ def show_page_contents():
             st.warning("No reminders found.")
             st.stop()
 
-        selected_name = st.selectbox("Select a Reminder to Edit", reminders_df["REMINDER_NAME"])
+        #selected_name = st.selectbox("Select a Reminder to Edit", reminders_df["REMINDER_NAME"])
+        selected_name = smart_selectbox(label="Select a Reminder to Edit", options=reminders_df["REMINDER_NAME"], key="key_selected_name")
         selected_row = reminders_df[reminders_df["REMINDER_NAME"] == selected_name].iloc[0]
         reminder_id = int(selected_row["ID"])
     else:
@@ -102,40 +112,92 @@ def show_page_contents():
         col1, col2 = st.columns(2)
 
         with col1:
-            reminder_date = st.date_input("Reminder Date", 
+            """ reminder_date = st.date_input("Reminder Date", 
                 value=selected_row["REMINDER_DATE"] if mode == "✏️ Edit Existing" else date.today()
+            ) """
+
+            reminder_date = smart_date_input(
+                label="Reminder Date",
+                default=selected_row["REMINDER_DATE"] if mode == "✏️ Edit Existing" else date.today(),
+                key="key_reminder_date"
             )
+
+            """ reminder_name = smart_text_input(
+                label="Reminder Name",
+                default=selected_row["REMINDER_NAME"] if mode == "✏️ Edit Existing" else "",
+                key="key_reminder_name"
+            ) """
 
             reminder_name = st.text_input("Reminder Name", 
                 value=selected_row["REMINDER_NAME"] if mode == "✏️ Edit Existing" else ""
             )
 
-            reminder_category = st.selectbox("Category", 
+            """ reminder_category = st.selectbox("Category", 
                 options=["Finance", "Health", "Work", "Other", "Loan", "Utility"],
                 index=["Finance", "Health", "Work", "Other", "Loan", "Utility"].index(selected_row["REMINDER_CATEGORY"]) if mode == "✏️ Edit Existing" else 0
+            ) """
+
+            reminder_category = smart_selectbox(
+                label="Category",
+                options=["Finance", "Health", "Work", "Other", "Loan", "Utility"],
+                default=selected_row["REMINDER_CATEGORY"] if mode == "✏️ Edit Existing" else "Finance",
+                key="key_reminder_category"
             )
 
-            recurrence_type = st.selectbox("Recurrence Type", 
+
+            """ recurrence_type = st.selectbox("Recurrence Type", 
                 options=["None", "Daily", "Weekly", "Monthly", "Yearly"],
                 index=["None", "Daily", "Weekly", "Monthly", "Yearly"].index(selected_row["RECURRENCE_TYPE"]) if mode == "✏️ Edit Existing" else 0
+            ) """
+
+
+            recurrence_type = smart_selectbox(
+                label="Recurrence Type",
+                options=["None", "Daily", "Weekly", "Monthly", "Yearly"],
+                default=selected_row["RECURRENCE_TYPE"] if mode == "✏️ Edit Existing" else "None",
+                key="key_recurrence_type"
             )
 
         with col2:
-            reminder_detail = st.text_area("Reminder Detail", 
+            """ reminder_detail = st.text_area("Reminder Detail", 
                 value=selected_row["REMINDER_DETAIL"] if mode == "✏️ Edit Existing" else ""
+            ) """
+
+            reminder_detail = smart_text_area(
+                label="Reminder Detail",
+                default=selected_row["REMINDER_DETAIL"] if mode == "✏️ Edit Existing" else "",
+                key="key_reminder_detail"
             )
 
-            recurrence_interval = st.number_input("Recurrence Interval", min_value=0, value=int(selected_row["RECURRENCE_INTERVAL"]) if mode == "✏️ Edit Existing" else 0)
+            #recurrence_interval = st.number_input("Recurrence Interval", min_value=0, value=int(selected_row["RECURRENCE_INTERVAL"]) if mode == "✏️ Edit Existing" else 0)
+            recurrence_interval = smart_number_input(
+                label="Recurrence Interval",
+                min_value=0,
+                default=int(selected_row["RECURRENCE_INTERVAL"]) if mode == "✏️ Edit Existing" else 0,
+                key="key_recurrence_interval"
+            )
+
 
             is_active = st.checkbox("Is Active", value=bool(selected_row["IS_ACTIVE"]) if mode == "✏️ Edit Existing" else True)
             is_done = st.checkbox("Is Done", value=bool(selected_row["IS_DONE"]) if mode == "✏️ Edit Existing" else False)
 
             if is_done:
-                done_date = st.date_input(
+                """ done_date = st.date_input(
                     "Done Date",
                     value=pd.to_datetime(selected_row["DONE_DATE"]).date()
                     if mode == "✏️ Edit Existing" and selected_row["DONE_DATE"]
                     else date.today()
+                ) """
+
+
+                done_date = smart_date_input(
+                    label="Done Date",
+                    default=(
+                        pd.to_datetime(selected_row["DONE_DATE"]).date()
+                        if mode == "✏️ Edit Existing" and selected_row["DONE_DATE"]
+                        else date.today()
+                    ),
+                    key="key_done_date"
                 )
             else:
                 done_date = None
@@ -143,7 +205,7 @@ def show_page_contents():
 
 
 
-        submitted = st.form_submit_button("💾 Save Reminder")
+        submitted = st.form_submit_button("💾 Save")
 
     # ----------- Save Action -----------
     if submitted:

@@ -3,6 +3,8 @@ import pandas as pd
 #from datetime import date
 from utils.utils import display_menu_buttons
 from utils import my_functions
+from utils.streamlit_helpers import smart_selectbox
+#smart_text_input, smart_text_area, smart_number_input, smart_date_input, render_clear_button_with_confirmation
 
 
 obj = my_functions.MyClass()
@@ -22,10 +24,13 @@ def show(navigate_to):
         st.warning("No tables or views found.")
     else:
         object_options = [f"{obj['type'].capitalize()}: {obj['name']}" for obj in objects]
-        selected = st.selectbox("Select a table or view to export", object_options)
+        #selected = st.selectbox("Select a table or view to export", object_options)
+        selected = smart_selectbox(label="Select a table or view to export", options=object_options, key="key_selected")
 
         # Step 2: Parse selected object name
-        selected_name = selected.split(": ")[1]
+        #selected_name = selected.split(": ")[1]
+        selected_name = selected.split(": ")[1] if selected else None
+
 
         # Step 3: Preview data
         conn = obj.get_db_connection()
