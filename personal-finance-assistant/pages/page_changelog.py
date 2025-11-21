@@ -1,3 +1,21 @@
+""" Format bu
+        {
+            "date": "2025-XX-YY",
+            "version": "v1.4",
+            "changes": {
+                "Added": [
+                    "None"
+                ],
+                "Changed": [
+                    "None"
+                ],
+                "Fixed": [
+                    "None"
+                ]
+            }
+        },
+        """
+
 import streamlit as st
 from utils.utils import display_menu_buttons
 
@@ -6,7 +24,104 @@ def show(navigate_to):
 
     display_menu_buttons(navigate_to)    
 
+
+
     changelog = [
+        {
+            "date": "2025-XX-YY",
+            "version": "v1.4",
+            "changes": {
+                "Added": [
+                    "Expense Distributor on Calculations Page"
+                ],
+                "Changed": [
+                    "None."
+                ],
+                "Fixed": [
+                    "None"
+                ]
+            }
+        },
+        {
+            "date": "2025-07-26",
+            "changes": {
+                "Added": [
+                    "None",
+                ],
+                "Changed": [
+                    "When 'Show Future Expenses' selected Monthly Expenses chart title updates accordingly on Dashboard Page",
+                    "When 'Show Future Expenses' selected Monthly Expenses by Period (Stacked by Category) table title updates accordingly on Dashboard Page",
+                    "When 'Show Future Expenses' selected Monthly Totals Table title updates accordingly on Dashboard Page",
+                    "When 'Show Future Expenses' selected Expense Breakdown pie chart title updates accordingly on Dashboard Page",
+                    "Smart selection functions are implemented on other pages too",
+                    "All data sources converted into REPORTABLE_EXPENSES view"
+                ],
+                "Fixed": [
+                    "None"
+                ]
+            }
+        },
+
+        {
+            "date": "2025-07-25",
+            "changes": {
+                "Added": [
+                    "Add/Update/Delete income types added in Manage Incomes tab under Settings Page",
+                    "Manage Incomes tab created in Settings Page (add/update/delete income)",
+                    "A monthly trend stacked chart with category breakdown added on Dashboard Page",
+
+                ],
+                "Changed": [
+                    "Newly added chart (monthly trend stacked chart with category breakdown) placed right of the Montly Expenses on Dashboard Page",
+                    "Monthly Totals Table placed below the Monthly Expenses on Dashboard Page"
+                ]
+            }
+        },
+
+        {
+            "date": "2025-07-23",
+            "changes": {
+                "Added": [
+                    "IS_ACTIVE column added in TBL_INCOMES table"
+                ]
+            }
+        },
+
+        {
+            "date": "2025-07-19",
+            "changes": {
+                "Added": [
+                    "A toggle button added for charts on the Dashboard Page to include/exclude future expenses",
+                    "Instead of using st.divider() to draw horizontal lines a more flexiable function (draw_separator) created using st.markdown and html"
+                    
+                ],
+                "Changed": [
+                    "The source of Monthly Expenses chart are changed to REPORTABLE_EXPENSES view (more compact and readable)",
+                    "EXPENSE_MONTH column added into REPORTABLE_EXPENSES view in database"
+                ]
+            }
+        },
+
+        {
+            "date": "2025-07-16",
+            "changes": {
+                "Added": [
+                    "TBL_INCOMES table created for incomes",
+                    "TBL_INCOMES_TYPES_LKP table create for income types"
+                ]
+            }
+        },
+
+        {
+            "date": "2025-07-15",
+            "changes": {
+                "Added": [
+                    "Settings Page created",
+                    "Manage Groups, Manage Types, Manage Banks pages moved into Settings Page",
+                ]
+            }
+        },
+
         {
             "date": "2025-07-14",
             "changes": {
@@ -179,29 +294,10 @@ def show(navigate_to):
 
 
 
-"""
-Format bu
-        {
-            "date": "2025-XX-YY",
-            "version": "v1.4",
-            "changes": {
-                "Added": [
-                    "New 'Interests' column with many-to-many database support.",
-                    "Clear form button now works as expected."
-                ],
-                "Changed": [
-                    "Improved layout for 'New Record' form using Streamlit columns."
-                ],
-                "Fixed": [
-                    "Score date input bug where value wouldn't clear properly."
-                ]
-            }
-        },
-"""
 
 
-"""
-Versioning
+
+"""Versioning
 Recommended Format: MAJOR.MINOR.PATCH
 1.4.2
 | Segment   | Meaning          | When to Increase                              |
@@ -218,5 +314,4 @@ How You Might Use It
 | `1.1.1` | Fixed clear form bug                              |
 | `1.2.0` | Added “Interests” column with multiselect         |
 | `2.0.0` | Major redesign or refactor of the database schema |
-
 """
