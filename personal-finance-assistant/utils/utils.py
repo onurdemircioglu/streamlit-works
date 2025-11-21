@@ -36,18 +36,22 @@ def display_menu_buttons(navigate_to):
     with col5:
         if st.button("Latest Entries"):
             navigate_to("page_latest_entries")
-
-    with col6:
-        if st.button("Manage Groups"):
-            navigate_to("page_manage_groups")
     
-    with col7:
-        if st.button("Manage Types"):
-            navigate_to("page_types")
+    with col6:
+        if st.button("Settings"):
+            navigate_to("page_settings")
 
-    with col8:
+    """with col6:
+        if st.button("Manage Groups"):
+            navigate_to("page_manage_groups")"""
+    
+    """with col7:
+        if st.button("Manage Types"):
+            navigate_to("page_types")"""
+
+    """with col8:
         if st.button("Manage Banks"):
-            navigate_to("page_banks")
+            navigate_to("page_banks")"""
     
     with col9:
         if st.button("Calculations"):

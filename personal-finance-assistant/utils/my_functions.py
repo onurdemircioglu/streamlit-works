@@ -29,7 +29,22 @@ class MyClass:  # ✅ Make sure this class is at the top level
             return conn
         except sqlite3.Error as e:
             print(f"Error while connecting to database: {e}")
-            return None   
+            return None
+    
+    def draw_separator(self, color: str = "#ccc", thickness: int = 3, radius: int = 0):
+        """
+        Draws a custom horizontal line in Streamlit.
+        
+        :param color: HEX or color name (e.g., "red", "#ccc").
+        :param thickness: Line thickness in pixels.
+        :param radius: Rounded corners (optional, default 0).
+        """
+        st.markdown(
+            f"""
+            <hr style="border: {thickness}px solid {color}; border-radius: {radius}px;">
+            """,
+            unsafe_allow_html=True
+        )
     
     def insert_new_record(self
                           ,expense_date: str,
@@ -555,7 +570,6 @@ class MyClass:  # ✅ Make sure this class is at the top level
 # **************************************************************** EXPORT - START **************************************************************** #
 
     def list_all_db_objects(self):
-
         conn = self.get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
@@ -570,3 +584,129 @@ class MyClass:  # ✅ Make sure this class is at the top level
         return results
 
 # **************************************************************** EXPORT - END **************************************************************** #
+
+# **************************************************************** INCOMES - START **************************************************************** #
+
+# ---------------------- INCOME TYPES CRUD ---------------------- #
+
+    def get_income_types(self):
+        conn = self.get_db_connection()
+        df = pd.read_sql_query("""SELECT ID, TYPE_NAME, IS_ACTIVE FROM TBL_INCOME_TYPES_LKP ORDER BY TYPE_NAME""", conn)
+        conn.close()
+        return df
+    
+    
+    def insert_income_type(self, type_name):
+        conn = self.get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO TBL_INCOME_TYPES_LKP (TYPE_NAME, IS_ACTIVE)
+            VALUES (?, 1)
+        """, (type_name,))
+        conn.commit()
+        conn.close()
+
+    
+    def update_income_type(self, type_id, new_name):
+        conn = self.get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE TBL_INCOME_TYPES_LKP
+            SET TYPE_NAME = ?
+            WHERE ID = ?
+        """, (new_name, type_id))
+        conn.commit()
+        conn.close()
+
+    
+    def soft_delete_income_type(self, type_id):
+        conn = self.get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE TBL_INCOME_TYPES_LKP
+            SET IS_ACTIVE = 0
+            WHERE ID = ?
+        """, (type_id,))
+        conn.commit()
+        conn.close()
+
+    
+    def restore_income_type(self, type_id):
+        conn = self.get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE TBL_INCOME_TYPES_LKP
+            SET IS_ACTIVE = 1
+            WHERE ID = ?
+        """, (type_id,))
+        conn.commit()
+        conn.close()
+
+    
+    def insert_income(self, income_date, income_type_id, income_amount, income_source, note):
+        conn = self.get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute("""
+                INSERT INTO TBL_INCOMES (
+                    INCOME_DATE, INCOME_TYPE_ID, INCOME_AMOUNT, INCOME_SOURCE, NOTE
+                ) VALUES (?, ?, ?, ?, ?)
+            """, (income_date, int(income_type_id), income_amount, income_source, note))
+            conn.commit()
+            return True
+        except Exception as e:
+            print("Insert income error:", e)
+            return False
+        finally:
+            conn.close()
+
+
+    def update_income(self, income_id, income_date, income_type_id, income_amount, income_source, note, income_is_active):
+        conn = self.get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute("""
+                UPDATE TBL_INCOMES SET
+                    INCOME_DATE = ?, INCOME_TYPE_ID = ?, INCOME_AMOUNT = ?, 
+                    INCOME_SOURCE = ?, NOTE = ?, UPDATE_DATE = DATE('now'), IS_ACTIVE = ?
+                WHERE ID = ?
+            """, (income_date, income_type_id, income_amount, income_source, note, int(income_is_active), income_id))
+            conn.commit()
+            return True
+        except Exception as e:
+            print("Update income error:", e)
+            return False
+        finally:
+            conn.close()
+
+
+    def soft_delete_income(self, income_id):
+        conn = self.get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute("UPDATE TBL_INCOMES SET IS_ACTIVE = 0 WHERE ID = ?", (income_id,))
+            conn.commit()
+            return True
+        except Exception as e:
+            print("Delete income error:", e)
+            return False
+        finally:
+            conn.close()
+
+
+    def get_all_incomes(self):
+        conn = self.get_db_connection()
+        df = pd.read_sql_query("""
+            SELECT i.ID, i.INCOME_DATE, t.TYPE_NAME AS INCOME_TYPE, 
+                i.INCOME_AMOUNT, i.INCOME_SOURCE, i.NOTE, i.IS_ACTIVE
+            FROM TBL_INCOMES i
+            JOIN TBL_INCOME_TYPES_LKP t ON i.INCOME_TYPE_ID = t.ID
+            ORDER BY i.INCOME_DATE DESC
+        """, conn)
+        conn.close()
+        return df
+
+
+
+# **************************************************************** INCOMES - END **************************************************************** #
+

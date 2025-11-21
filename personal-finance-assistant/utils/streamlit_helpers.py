@@ -1,9 +1,32 @@
 from datetime import date
 import streamlit as st
+import pandas as pd
+
+
+def smart_selectbox_v1(label, options, key, default=None):
+    if not options:
+        st.warning(f"No options available for '{label}'")
+        return ""  # ✅ Return empty string instead of None
+
+    if default is None:
+        default = options[0]
+
+    default_index = 0
+    if key in st.session_state:
+        try:
+            default_index = options.index(st.session_state[key])
+        except ValueError:
+            default_index = options.index(default) if default in options else 0
+
+    return st.selectbox(label, options=options, index=default_index, key=key)
 
 
 def smart_selectbox(label, options, key, default=None):
-    if not options:
+    # ✅ Convert Series to list
+    if isinstance(options, (pd.Series, pd.Index)):
+        options = options.tolist()
+
+    if not options:  # Now safe to check emptiness
         st.warning(f"No options available for '{label}'")
         return None
 
@@ -30,9 +53,26 @@ def smart_text_area(label, key, default="", height=100):
     return st.text_area(label, value=value, key=key, height=height)
 
 
-def smart_number_input(label, key, default=0.0, min_value=0.0, max_value=None, step=1.0, format="%.2f"):
+def smart_number_input_v1(label, key, default=0.0, min_value=0.0, max_value=None, step=1.0, format="%.2f"):
     value = st.session_state.get(key, default)
     return st.number_input(label, min_value=min_value, max_value=max_value, step=step, format=format, value=value, key=key)
+
+def smart_number_input_v2(label, key, default=0.0, min_value=None, max_value=None, step=None, format=None):
+    value = st.session_state.get(key, default)
+    return st.number_input(label, value=value, key=key,
+                           min_value=min_value, max_value=max_value,
+                           step=step, format=format)
+
+def smart_number_input(label, key, default=None, min_value=None, max_value=None, step=None, format=None):
+    # ✅ Automatically choose the highest between default and min_value
+    if default is None:
+        default = min_value if min_value is not None else 0.0
+    elif min_value is not None and default < min_value:
+        default = min_value
+
+    value = st.session_state.get(key, default)
+    return st.number_input(label, value=value, key=key, min_value=min_value, max_value=max_value, step=step, format=format)
+
 
 
 def smart_date_input(label, key, default=None):
@@ -74,3 +114,15 @@ def render_clear_button_with_confirmation(field_keys: list, label: str = "Clear 
             st.session_state.pop(key, None)
             st.success("Form cleared")
         st.rerun()
+
+
+
+    #def clear_field(field_key: str, default_value=""):
+    #def clear_field(field_key: str, default_value=""):
+        """
+        Clears the value of a Streamlit widget by resetting its session state.
+        :param field_key: The key assigned to the widget.
+        :param default_value: The value to reset to (default is an empty string).
+        """
+        #if field_key in st.session_state:
+            #st.session_state[field_key] = default_value""
